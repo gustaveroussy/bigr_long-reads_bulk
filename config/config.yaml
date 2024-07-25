@@ -12,7 +12,6 @@ output_dir: /mnt/beegfs/userdata/m_aglave/long-reads-bulk/test/data_output/
 steps:
   fastq_qc: false
   bam_qc: true
-  fastq_qc: false
   snv_calling: true
   sv_calling: true
   phasing: true

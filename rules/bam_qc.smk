@@ -22,8 +22,8 @@ rule symlink_rename_bam:
     threads:
         1
     resources:
-        mem_mb = (lambda wildcards, attempt: min(attempt * 256, 2048)),
-        time_min = (lambda wildcards, attempt: min(attempt * 5, 50))
+        mem_mb = (lambda wildcards, attempt: min(attempt * 2048, 20480)),
+        time_min = (lambda wildcards, attempt: attempt * 300)
     run:
         #sys.stderr.write("\t Create symbolic link: \n")
         #sys.stderr.write("\t From :" + "\t" + str(input.bam) + "\n")
