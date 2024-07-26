@@ -39,7 +39,7 @@ rule clairs:
         TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
         singularity exec --contain \
           -B {OUTPUT_DIR},{params.path_fa_ref} -B ${{TMP_DIR}}:${{TMPDIR}} \
-          /mnt/beegfs/userdata/n_rabearivelo/containers/clairs_latest.sif \
+          {SING_ENV_CLAIRS} \
           /opt/bin/run_clairs \
           --tumor_bam_fn {input.tumor_bam_file} \
           --normal_bam_fn {input.normal_bam_file} \

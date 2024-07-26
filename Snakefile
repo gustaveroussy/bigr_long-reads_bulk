@@ -29,7 +29,7 @@ sys.stderr.write("\n#################### Setting Parameters ####################
 #pipeline directory
 PIPELINE_DIR = workflow.snakefile
 PIPELINE_DIR = PIPELINE_DIR.replace("/Snakefile", "")
-
+c
 #output directory (working directory)
 if "output_dir" in config:
     OUTPUT_DIR = config["output_dir"]
@@ -55,8 +55,9 @@ if config["steps"]["snv_calling"]:
   SING_ENV_SNPEFF = PIPELINE_DIR + "/envs/singularity/snpeff_5.2c.simg"
   SNPSIFT_FILTERS =  [filter.replace("'", "\'").replace('"', '\"') for filter in config["snpsift"]["filters"]]
   SNPSIFT_FILTERS_NAMES = [filter.replace("'", "").replace("(", "").replace(")", "").replace(" ", "").replace(">", "sup").replace("<", "inf").replace("=", "eq") for filter in config["snpsift"]["filters"]] #to do: find a way to keep "()" if therer are more than 2 parentheses. Ex: "((QUAL >= 10) && (QUAL <= 30)) || (FILTER = 'PASS')"
+  SING_ENV_CLAIRS = PIPELINE_DIR + "/envs/singularity/clairs_0.1.7.sif"
 
-#if config["steps"]["sv_calling"]:
+if config["steps"]["sv_calling"]:
   CONDA_ENV_SNIFFLES = PIPELINE_DIR + "/envs/conda/sniffles.yaml"
   CONDA_ENV_NANOMONSV = PIPELINE_DIR + "/envs/conda/nanomonsv.yaml"
 
