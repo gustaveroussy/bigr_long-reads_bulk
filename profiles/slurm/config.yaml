@@ -1,4 +1,4 @@
-restart-times: 1
+restart-times: 2
 jobscript: "slurm-jobscript.sh"
 cluster: "slurm-submit.py"
 cluster-status: "slurm-status.py"
@@ -11,4 +11,4 @@ reason: false
 printshellcmds: true
 jobname: "{name}.{jobid}.snakejob"
 use-conda: true
-conda-prefix: /mnt/beegfs/pipelines/bigr_long-reads_bulk/dev_test/envs/compiled_conda
+conda-prefix: /mnt/beegfs/pipelines/bigr_long-reads_bulk/2.0.0/envs/compiled_conda

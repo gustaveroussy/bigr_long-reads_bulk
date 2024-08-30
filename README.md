@@ -48,7 +48,7 @@ Download all singularity images from [Zenodo](https://zenodo.org/records/1361951
 #### :three: Install Snakemake environment
 ```
 source /mnt/beegfs/software/miniconda/24.3.0/etc/profile.d/conda.sh
-conda env create -f /path_to_pipeline_installation_dir/${VERSION}/envs/conda/snakemake.yaml --prefix=/path_to_pipeline_installation_dir/${VERSION}/envs/conda/snakemake -y
+conda env create -f /path_to_pipeline_installation_dir/${VERSION}/envs/conda/snakemake.yaml --prefix=/path_to_pipeline_installation_dir/${VERSION}/envs/compiled_conda/snakemake -y
 ```
 
 You are now ready to use the pipeline!
