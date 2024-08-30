@@ -226,7 +226,7 @@ def get_targets():
           #pepper_margin_deepvariant
           expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/whatshap/{sample_name}{compl}_phased.vcf.gz"), sample_name=SAMPLE_NAME, compl=""),
           expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/whatshap/{sample_name}{compl}_phasing_stats.txt"), sample_name=SAMPLE_NAME, compl=""),
-          expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/whatshap/{sample_name}{compl}_phasing_stats.tsv"), sample_name=SAMPLE_NAME, compl="_merge_output"),
+          expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/whatshap/{sample_name}{compl}_phasing_stats.tsv"), sample_name=SAMPLE_NAME, compl=""),
           expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/whatshap/{sample_name}{compl}_phasing_haplotype_blocks.tsv"), sample_name=SAMPLE_NAME, compl=""),
           expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/whatshap/{sample_name}{compl}_phasing_haplotype_blocks.gtf"), sample_name=SAMPLE_NAME, compl=""),
           expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/whatshap/{sample_name}{compl}_phased.vcf.gz.tbi"), sample_name=SAMPLE_NAME, compl=""),
