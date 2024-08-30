@@ -1,4 +1,5 @@
-#script for transcrit DMR
+#script for ALU DMR
+
 
 args = commandArgs(trailingOnly=TRUE)
 library(data.table)
@@ -6,34 +7,39 @@ library(GeneDMRs)
 library(dplyr)
 
 
-analysis_path=args[1]
-
-chr=args[2]
-meth_type=args[3]
-strand=args[4]
-ref_path=args[5]
-file_path<-paste0(analysis_path,"bed_files/chr_",chr,"/",meth_type,"/")
-filelist<-list.files(path=file_path,pattern=paste0("*",strand,".bed"),full.names=F)
+control=unlist(strsplit(args[1],","))
+case=unlist(strsplit(args[2],","))
 
 
-print("The file_path is:")
-print(file_path)
+chr=args[3]
+meth_type=args[4]
+strand=args[5]
+ref_path=args[6]
+output_file=args[7]
+#file_path<-paste0(analysis_path,"bed_files/chr_",chr,"/",meth_type,"/")
+#filelist<-list.files(path=file_path,pattern=paste0("*",strand,".bed"),full.names=F)
+
+
+print("The control(s) file(s):")
+print(control)
+print("The case(s) file(s):")
+print(case)
+
+
 print("for chromosome ")
 print(chr)
 print("and for strand:")
 print(strand)
 print("ref file:")
-print(paste0(ref_path,"refseq.bed_ucsc_transcrit_chr",chr,"_grch38_",strand,".txt"))
+#print(paste0(ref_path,"refseq.bed_ucsc_Alu_chr",chr,"_grch38_",strand,".txt"))
+print(paste0(ref_path,"/refseq.bed_Alu_chr",chr,"_",strand,".txt"))
 
-combin<-combn(filelist,2)
-print("Combination:")
-print(combin)
-date()
 
 Bedfile_read2 <- function(paths = paste(system.file(package = "GeneDMRs"), "/methdata", sep=""), bedfile = "refseq",
                          suffix = ".txt", feature = FALSE, featurewrite = TRUE){
   # set the paths #
   setwd(paths)
+
   # read refseq or cpgi file #
   if(bedfile=="refseq"){
     if(feature == FALSE){
@@ -87,42 +93,43 @@ Bedfile_read2 <- function(paths = paste(system.file(package = "GeneDMRs"), "/met
   }
 }
 
-
-
-
-print("Loading gtf file")
-inputrefseqfile<-Bedfile_read2(paths=ref_path,feature=T,bedfile="refseq",suffix=paste0("_ucsc_transcrit_chr",chr,"_grch38_",strand,".txt"))
-
-
-for (c in (1:ncol(combin))){
-        control<-c(combin[2,c])
-        case<-c(combin[1,c])
-
-        print(paste0("Case= ", case))
-        print(paste0("Control= ", control))
-        
-        subDir<-paste0(analysis_path,"Transcrit/",meth_type,"/",unlist(strsplit(case,"__"))[1],"_",unlist(strsplit(control,"__"))[1],"/")
-        
-        if (!file.exists(subDir)){
-		dir.create(subDir,recursive=T)
-	}
-
-        print(paste0("Comparison of ",unlist(strsplit(case,"__"))[1], " against ",unlist(strsplit(control,"__"))[1]))
-        inputmethfile <- Methfile_read(control_paths = paste0(file_path,control), case_paths = paste0(file_path,case))
-
-        # quality control #
-        inputmethfile_QC <- Methfile_QC(inputmethfile)
-
-
-	# methylation mean #
-        print("methylation mean")
-        date()
-        regiongeneall<-Methmean_region(inputmethfile_QC, inputrefseqfile, chrnum = chr,featurename=T)
-        date()
-        write.table(regiongeneall,paste0(subDir,"mean_table_chr",chr,"_",strand,"_",unlist(strsplit(case,"__"))[1],"-",unlist(strsplit(control,"__"))[1],".tsv"),sep="\t",quote=F,row.names=F)
-        
-    print(paste0("Combination analysis number ",c, " is finished!"))
+#check if the reference is empty (for example, there is no Alu or CpG for MT chromosome in human)
+if(file.size(paste0(ref_path, "/refseq.bed_Alu_chr",chr,"_",strand,".txt")) == 0L){
+    print(paste0("Warning: reference file is empty: ", paste0(ref_path, "/refseq.bed_Alu_chr",chr,"_",strand,".txt")))
+    print("Results will be empty too!")
+    regiongeneall <- data.frame()
+    
+}else{
+    
+    print("Loading gtf file")
+    #open ref
+    inputrefseqfile<-Bedfile_read2(paths=ref_path,bedfile="refseq",suffix=paste0("_Alu_chr",chr,"_",strand,".txt"))
+    
+    print(paste0("Case= ", case))
+    print(paste0("Control= ", control))
+    
+    #subDir<-paste0(analysis_path,"Alu_seq/",meth_type,"/",unlist(strsplit(case,"__"))[1],"_",unlist(strsplit(control,"__"))[1],"/")
+    
+    #if (!file.exists(subDir)){
+    #    dir.create(subDir,recursive=T)
+    #}
+    
+    print("Read the methylation files") #create table containing all the sample
+    inputmethfile <- Methfile_read(control_paths = control, case_paths = case)
+    
+    print("Compute quality control")
+    inputmethfile_QC <- Methfile_QC(inputmethfile)
+    
+    print("Calculate the methylation mean for regions")
+    date()
+    regiongeneall<-Methmean_region(inputmethfile_QC, inputrefseqfile, chrnum = chr)
+    date()
+    
 }
+
+write.table(regiongeneall, output_file, sep="\t", quote=FALSE, row.names=FALSE)
+
+
 
 
 

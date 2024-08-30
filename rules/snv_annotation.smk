@@ -3,27 +3,18 @@
 These rules make the SNV Annotation
 ##########################################################################
 """
-wildcard_constraints:
-    sample_name = '|'.join([x for x in SAMPLE_NAME]),
-    claire3_model = '|'.join([x for x in NAME_CLAIR3_MODEL]),
-    path_calling_tool_params = "clair3.+|pepper_margin_deepvariant|clairs",
-    filter = '|'.join([x for x in SNPSIFT_FILTERS_NAMES]),
-    compl = "_merge_output|_XXX|_snv|_indel"
 
 """
 This rule makes the annotation of SNV by snpEff
 """
 
-def snpeff_annotation_input_vcf(wildcards):
-    return os.path.normpath(OUTPUT_DIR + "/SNV_Calling/" + str(wildcards.path_calling_tool_params) + "/" + str(wildcards.sample_name) + "/" + str(wildcards.sample_name) + str(wildcards.compl) + ".vcf.gz")
-
 rule snpeff_annotation:
     input:
-        vcf_file = snpeff_annotation_input_vcf
+        vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name_or_pair_somatic}/{sample_name_or_pair_somatic}{compl}.vcf.gz")
     output:
-        annotated_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated.vcf"),
-        snpEff_stat_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated_stats.csv"),
-        snpEff_summary_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated_summary.html")
+        annotated_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name_or_pair_somatic}/snpEff/{sample_name_or_pair_somatic}{compl}_annotated.vcf"),
+        snpEff_stat_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name_or_pair_somatic}/snpEff/{sample_name_or_pair_somatic}{compl}_annotated_stats.csv"),
+        snpEff_summary_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name_or_pair_somatic}/snpEff/{sample_name_or_pair_somatic}{compl}_annotated_summary.html")
     threads:
         1
     resources:
@@ -46,22 +37,27 @@ rule snpeff_annotation:
 
 
 """
-This rule makes the annotation of SNV by snpSift with dbsnp
+This rule makes the annotation of SNV by snpSift with dbnsfp
 """
+def input_snpsift_annotation_dbnsfp(wildcards):
+    if SNPEFF_SUFFIX != "":
+        return os.path.normpath(OUTPUT_DIR + "/SNV_Calling/" + str(wildcards.variant_calling_mode) + "/" + str(wildcards.path_calling_tool_params) + "/" + str(wildcards.sample_name_or_pair_somatic) + "/snpEff/" + str(wildcards.sample_name_or_pair_somatic) + str(wildcards.compl) + SNPEFF_SUFFIX + ".vcf"),
+    else:
+        return os.path.normpath(OUTPUT_DIR + "/SNV_Calling/" + str(wildcards.variant_calling_mode) + "/" + str(wildcards.path_calling_tool_params) + "/" + str(wildcards.sample_name_or_pair_somatic) + "/" + str(wildcards.sample_name_or_pair_somatic) + str(wildcards.compl) + ".vcf.gz"),
 
-rule snpsift_annotation_dbsnp:
+rule snpsift_annotation_dbnsfp:
     input:
-        annotated_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated.vcf"),
-        database = config["references"]["dbsnp"]
+        annotated_vcf_file = input_snpsift_annotation_dbnsfp,
+        database = config["references"]["dbnsfp"]
     output:
-        annotated_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated_dbnsfp.vcf")
+        annotated_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name_or_pair_somatic}/snpEff/{sample_name_or_pair_somatic}{compl}" + SNPEFF_SUFFIX + "_dbnsfp.vcf")
     threads:
         1
     resources:
         mem_mb = (lambda wildcards, attempt: attempt * 40960),
         time_min = (lambda wildcards, attempt: attempt * 350)
     params:
-        database = os.path.dirname(config["references"]["dbsnp"])
+        database = os.path.dirname(config["references"]["dbnsfp"])
     shell:
         """
         TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
@@ -75,13 +71,18 @@ rule snpsift_annotation_dbsnp:
 """
 This rule makes the annotation of SNV by snpSift with clinvar
 """
+def input_snpsift_annotation_clinvar(wildcards):
+    if SNPEFF_SUFFIX != "" or DBNSFP_SUFFIX != "":
+        return os.path.normpath(OUTPUT_DIR + "/SNV_Calling/" + str(wildcards.variant_calling_mode) + "/" + str(wildcards.path_calling_tool_params) + "/" + str(wildcards.sample_name_or_pair_somatic) + "/snpEff/" + str(wildcards.sample_name_or_pair_somatic) + str(wildcards.compl) + SNPEFF_SUFFIX + DBNSFP_SUFFIX + ".vcf"),
+    else:
+        return os.path.normpath(OUTPUT_DIR + "/SNV_Calling/" + str(wildcards.variant_calling_mode) + "/" + str(wildcards.path_calling_tool_params) + "/" + str(wildcards.sample_name_or_pair_somatic) + "/" + str(wildcards.sample_name_or_pair_somatic) + str(wildcards.compl) + ".vcf.gz"),
 
 rule snpsift_annotation_clinvar:
     input:
-        annotated_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated_dbnsfp.vcf"),
+        annotated_vcf_file = input_snpsift_annotation_clinvar,
         database = config["references"]["clinvar"]
     output:
-        annotated_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated_dbnsfp_clinvar.vcf")
+        annotated_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name_or_pair_somatic}/snpEff/{sample_name_or_pair_somatic}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + "_clinvar.vcf")
     threads:
         1
     resources:
@@ -99,19 +100,25 @@ rule snpsift_annotation_clinvar:
 
         """
 
-
 """
 This rule makes the filtering of SNV by snpSift
 """
+
+def input_snpsift_filtering(wildcards):
+    if SNPEFF_SUFFIX != "" or DBNSFP_SUFFIX != "" or CLINVAR_SUFFIX != "":
+        return os.path.normpath(OUTPUT_DIR + "/SNV_Calling/" + str(wildcards.variant_calling_mode) + "/" + str(wildcards.path_calling_tool_params) + "/" + str(wildcards.sample_name_or_pair_somatic) + "/snpEff/" + str(wildcards.sample_name_or_pair_somatic) + str(wildcards.compl) + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + ".vcf"),
+    else:
+        return os.path.normpath(OUTPUT_DIR + "/SNV_Calling/" + str(wildcards.variant_calling_mode) + "/" + str(wildcards.path_calling_tool_params) + "/" + str(wildcards.sample_name_or_pair_somatic) + "/" + str(wildcards.sample_name_or_pair_somatic) + str(wildcards.compl) + ".vcf.gz"),
+
 def snpsift_filter_params(wildcards):
     index = SNPSIFT_FILTERS_NAMES.index(wildcards.filter)
     return SNPSIFT_FILTERS[index]
 
 rule snpsift_filtering:
     input:
-        annotated_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated.vcf")
+        annotated_vcf_file = input_snpsift_filtering
     output:
-        filtered_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated_{filter}.vcf")
+        filtered_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name_or_pair_somatic}/snpEff/{sample_name_or_pair_somatic}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.vcf")
     threads:
         1
     resources:

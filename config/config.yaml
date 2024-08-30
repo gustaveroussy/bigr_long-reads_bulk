@@ -1,25 +1,29 @@
 # General pipeline options
-max_threads: 20
+#max_threads: 20
 
 # Input parameters
-input_format: bam #fastq, pod5, bam (aligned bam), ubam (unaligned bam)
-variant_calling_mode: germline #germline or somatic
+input_format: pod5 #pod5, ubam (unaligned bam), bam (aligned bam)
+basecalling_mode: methylation #methylation or basic
+variant_calling_mode: somatic #germline or somatic
 
-# Output paramters
-output_dir: /mnt/beegfs/userdata/m_aglave/long-reads-bulk/test/data_output/
+# Output parameter
+output_dir: /mnt/beegfs/scratch/n_rabearivelo/test_pipeline/all/data_output/ #Output directory path such as /mnt/beegfs/scratch/<USER_ID>/<PROJECT_NAME>/data_output/
 
 # Select which parts of the pipeline should be run
 steps:
-  fastq_qc: false
-  bam_qc: true
+  basecalling: true
+  alignment: true
+  differential_methylation_sample: true
+  differential_methylation_condition: true
   snv_calling: true
   sv_calling: true
-  phasing: true
+  phasing: true #if true, snv_calling should also be set as "true"
+  cnv_calling: false
 
 # Path to design file
-design: /mnt/beegfs/userdata/m_aglave/long-reads-bulk/test/script/design_bam_germline.tsv
+design: /mnt/beegfs/scratch/n_rabearivelo/test_pipeline/all/design.tsv #Design file path such as /mnt/beegfs/scratch/<USER_ID>/<PROJECT_NAME>/script/design.tsv
 
-# Genome information
+# References information
 #Note: genome_snpEff: GRCh38.109 doesn't exist in snpEff database
 references:
   species: human
@@ -29,15 +33,34 @@ references:
   genome_snpEff: GRCh38.99
   dbsnp: /mnt/beegfs/database/bioinfo/Index_DB/dbNSFP/4.1/GRCh38/dbNSFP4.1a.txt.gz
   clinvar: /mnt/beegfs/database/bioinfo/Index_DB/ClinVar/GRCh38/clinvar_20230710.vcf.gz
+  annotsv: /mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/ANNOTATIONS/AnnotSV_annotations/
+  fastq_screen_conf: /mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/REFERENCES/FastQ_Screen_Genomes/fastq_screen.conf
+  chromosomes: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'MT', 'X', 'Y']
 
-# Clair3 parameters
+# DMR references
+Alu: /mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/REFERENCES/DMR/GRCh38/Alu_sequence_grch38.txt.gz
+CpG: /mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/REFERENCES/DMR/GRCh38/cpgi.bed_ucsc_grch38_all.txt
+Transcript: /mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/REFERENCES/DMR/GRCh38/refseq.bed_ucsc_transcript_grch38.txt.gz
+# Genehancer: genome_name+path_to_ref
+
+# Germline SNV calling parameters
 clair3:
   # Latest R10 model from Rerio for Dorado SUP / downloaded on 2024-02-25
-  model: ["/mnt/beegfs/userdata/n_rabearivelo/rerio/clair3_models/r1041_e82_400bps_sup_v430"]
+  model: ["/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/rerio/clair3_models/r1041_e82_400bps_sup_v430"]
 
+# Somatic SNV calling parameters
+clairs:
+  model: ont_r10_dorado_sup_5khz
+
+# SNV annotation parameters
 snpsift:
   filters: ["(FILTER = 'PASS')", "( QUAL >= 10 )", "( QUAL >= 15 )"]
 
-# ClairS parameters
-clairs:
-  model: ont_r10_dorado_sup_5khz
+# SNV graphs parameters
+maftools:
+  genes_of_interest: /mnt/beegfs/scratch/n_rabearivelo/test_pipeline/all/genes_list.txt #List of genes file path such as /mnt/beegfs/scratch/<USER_ID>/<PROJECT_NAME>/genes_list.txt
+
+# Long CNV calling parameters
+spectre:
+#  blacklist: #BED files path for regions to exclude
+  cancer_sample: true

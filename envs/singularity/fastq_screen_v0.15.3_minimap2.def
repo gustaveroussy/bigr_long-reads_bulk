@@ -1,0 +1,32 @@
+BootStrap: docker
+From: ubuntu:22.04
+
+#build image
+#sudo singularity build fastq_screen_v0.15.3_minimap2.simg fastq_screen_v0.15.3_minimap2.def
+#using image
+#singularity exec --no-home fastq_screen_v0.15.3_minimap2.simg fastq_screen --help
+%environment
+	export RETICULATE_MINICONDA_ENABLED=FALSE #ne pas utiliser de miniconda dans le container
+	LANG=en_US.UTF-8
+	LC_TIME=en_US.UTF-8
+	LC_MONETARY=en_US.UTF-8
+	LC_PAPER=en_US.UTF-8
+	LC_MEASUREMENT=en_US.UTF-8
+	export PATH="/minimap2-2.28_x64-linux/:$PATH"
+	export PATH="/FastQ-Screen/:$PATH"
+
+%post #toutes les lignes de commande qu'on veux qu'il installe
+	echo "Ubuntu version ############"
+	cat /etc/lsb-release #afficher la version de ubuntu qui a été installé
+	apt-get -y update && apt-get -y upgrade
+	#prevent the configuration of timezone data to block the build:
+	ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+	apt-get install -y tzdata curl unzip tar bzip2
+	dpkg-reconfigure --frontend noninteractive tzdata
+
+	#Install minimap2
+	curl -L https://github.com/lh3/minimap2/releases/download/v2.28/minimap2-2.28_x64-linux.tar.bz2 | tar -jxvf -
+	
+	#Install FastQ-Screen (version: minimap2, not merged to the FastQ-Screen minimap branch for now)
+	apt-get -y install git
+	git clone -b minimap2 https://github.com/mp15/FastQ-Screen.git

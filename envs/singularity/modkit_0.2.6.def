@@ -1,0 +1,27 @@
+BootStrap: docker
+From: ubuntu:22.04
+
+#build image
+#sudo singularity build modkit_0.2.6.simg modkit_0.2.6.def
+#using image
+#singularity exec --no-home modkit_0.2.6.simg modkit --version
+%environment
+	export RETICULATE_MINICONDA_ENABLED=FALSE #ne pas utiliser de miniconda dans le container
+	LANG=en_US.UTF-8
+	LC_TIME=en_US.UTF-8
+	LC_MONETARY=en_US.UTF-8
+	LC_PAPER=en_US.UTF-8
+	LC_MEASUREMENT=en_US.UTF-8
+	export PATH="/dist/:$PATH"
+
+%post #toutes les lignes de commande qu'on veux qu'il installe
+	echo "Ubuntu version ############"
+	cat /etc/lsb-release #afficher la version de ubuntu qui a été installé
+	apt-get -y update && apt-get -y upgrade
+	#prevent the configuration of timezone data to block the build:
+	ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+	apt-get install -y tzdata=2024a-0ubuntu0.22.04.1 wget=1.21.2-2ubuntu1.1
+	dpkg-reconfigure --frontend noninteractive tzdata
+	
+	wget https://github.com/nanoporetech/modkit/releases/download/v0.2.6/modkit_v0.2.6_centos7_x86_64.tar.gz
+	tar -xvf modkit_v0.2.6_centos7_x86_64.tar.gz

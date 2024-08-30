@@ -1,0 +1,114 @@
+BootStrap: docker
+From: ubuntu:24.04
+
+#build image
+#sudo ~/applications/anaconda3/envs/singularity/bin/singularity build GeneDMR_Hs.simp GeneDMR.def
+#using image
+#singularity shell --no-home -B /home/yasmina/Documents/analyse/test_pipeline/Comp1/1_pileup/r_dmr/per_gene/ GeneDMR.simg
+%environment
+	export RETICULATE_MINICONDA_ENABLED=FALSE #ne pas utiliser de miniconda dans le container
+	LANG=en_US.UTF-8
+	LC_TIME=en_US.UTF-8
+	LC_MONETARY=en_US.UTF-8
+	LC_PAPER=en_US.UTF-8
+	LC_MEASUREMENT=en_US.UTF-8
+
+%post
+    echo "Ubuntu version ######################"
+    cat /etc/lsb-release
+    apt-get -y update && apt-get -y upgrade
+    
+    ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+    apt-get install -y tzdata
+    dpkg-reconfigure --frontend noninteractive tzdata
+
+    apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev libgsl-dev libgit2-dev libpython3-dev libgmp3-dev tzdata libfontconfig1-dev  libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libcairo2-dev libxt-dev libgeos-dev libproj-dev
+    apt-get install -y dirmngr gnupg apt-transport-https ca-certificates software-properties-common
+    apt-get -y update && apt-get -y upgrade
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+    add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+    apt-get -y update && apt-get -y upgrade
+    apt-get install -y r-base-core r-base-dev python3 #apt-cache policy r-base r-base-dev pour connaître les versions
+    apt-cache policy r-base=4.4.1-1.2404.0 r-base-dev=4.4.1-1.2404.0
+    echo "R version ######################"
+    R --version
+
+	#installation des packages R
+	echo "Install R packages ###############"
+	R --slave -e 'install.packages("BiocManager")'
+	R --slave -e 'install.packages("dplyr")'
+	R --slave -e 'BiocManager::install("devtools")'
+	R --slave -e 'BiocManager::install("Cairo")'
+	R --slave -e 'devtools::install_github("YuLab-SMU/ggtree")'
+	R --slave -e 'install.packages("proj4")'
+	R --slave -e 'devtools::install_github("edwindj/ffbase", subdir="pkg")'
+	#R --slave -e 'BiocManager::install("pathfindR")' magick not working
+	R --slave -e 'BiocManager::install(c("clusterProfiler", "corrplot", "dplyr", "ffbase", "genomation","pheatmap", "plotrix", "qqman", "RCircos", "VennDiagram", "org.Mm.eg.db"))'
+	R --slave -e 'BiocManager::install(c("org.Hs.eg.db","EnhancedVolcano", "maftools"))'
+	R --slave -e'BiocManager::install("methylKit")'
+	R --slave -e 'BiocManager::install(c("ChIPpeakAnno","ChIPseeker"))'
+	R --slave -e 'BiocManager::install("optparse")'
+	R -e 'devtools::install_github("thomasp85/patchwork")'
+	R -e 'devtools::install_github("xiaowangCN/GeneDMRs")'
+	R --slave -e 'BiocManager::install("rlang")'
+
+
+
+
+
+#old recipe on 22.04
+#%post #toutes les lignes de commande qu'on veux qu'il installe
+#	echo "Ubuntu version ############"
+#	cat /etc/lsb-release #afficher la version de ubuntu qui a été installé
+#	apt-get -y update && apt-get -y upgrade
+#	#prevent the configuration of timezone data to block the build:
+#	ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+#	apt-get install -y tzdata
+#	dpkg-reconfigure --frontend noninteractive tzdata
+#	apt-get install -y libcurl4-openssl-dev libfontconfig1-dev libxml2-dev libssl-dev
+#	apt-get install -y libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+#	apt-get install -y libproj-dev libcairo2-dev
+#	add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+	#apt install software-properties-common
+#	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+#	apt-get -y update && apt-get -y upgrade
+	#add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/'
+#	apt-get install -y r-base-core python3
+	
+	#apt-get install -y openssh-client openssh-server g++ curl
+#	apt-get -y update && apt-get -y upgrade
+#	echo "R version #################"
+#	R --version
+
+
+	#installation des packages R
+#	echo "Install R packages ###############"
+	#R --slave -e 'install.packages("BiocManager")'
+	#R --slave -e 'install.packages("dplyr")'
+	#R --slave -e 'BiocManager::install("devtools")'
+	#R --slave -e 'BiocManager::install("Cairo")'
+	#R --slave -e 'devtools::install_github("YuLab-SMU/ggtree")'
+	#R --slave -e 'install.packages("proj4")'
+	#R --slave -e 'devtools::install_github("edwindj/ffbase", subdir="pkg")'
+	#R --slave -e 'BiocManager::install("pathfindR")' #added lastly
+	#R --slave -e 'BiocManager::install(c("GenomicRanges","rtracklayer","impute","Rsamtools"))'
+	#R --slave -e 'BiocManager::install("genomation")'
+	#R --slave -e 'BiocManager::install(c("clusterProfiler", "corrplot", "dplyr", "ffbase", "genomation","pheatmap", "plotrix", "qqman", "RCircos", "VennDiagram", "org.Mm.eg.db"))'
+	#R --slave -e 'BiocManager::install(c("org.Hs.eg.db","EnhancedVolcano", "maftools"))'
+	#R --slave -e'BiocManager::install("methylKit")'
+	#R --slave -e 'BiocManager::install(c("ChIPpeakAnno","ChIPseeker"))'
+	#R --slave -e 'BiocManager::install("optparse")'
+	#R -e 'devtools::install_github("thomasp85/patchwork")'
+	#R -e 'devtools::install_github("xiaowangCN/GeneDMRs")'
+	#R --slave -e 'BiocManager::install("rlang")'
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+

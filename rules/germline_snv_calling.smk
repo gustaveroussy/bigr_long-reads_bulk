@@ -3,65 +3,86 @@
 These rules make the SNV Calling for germline variants
 ##########################################################################
 """
-wildcard_constraints:
-    bam_name = '|'.join([x for x in BAM_NAME]),
-    claire3_model = '|'.join([x for x in NAME_CLAIR3_MODEL])
+
 
 """
 This rule makes the SNV Calling by clair3 with various models
 """
 
-def clair3_input_bam(wildcards):
-    index = BAM_NAME.index(wildcards.bam_name)
-    return SYMLINK_FILES[index]
-
 def clair3_input_model_path(wildcards):
-    index = NAME_CLAIR3_MODEL.index(wildcards.claire3_model)
+    index = NAME_CLAIR3_MODEL.index(wildcards.clair3_model)
     return config["clair3"]["model"][index]
-
 
 rule clair3:
     input:
-        bam_file = clair3_input_bam,
+        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
         fa_ref = config["references"]["genome"],
         clair3_path = clair3_input_model_path
     output:
-        vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/clair3/{claire3_model}/{bam_name}/{bam_name}_merge_output.vcf.gz"),
-        vcf_tbi = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/clair3/{claire3_model}/{bam_name}/{bam_name}_merge_output.vcf.gz.tbi"),
-        full_al_vcf_file = temp(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/clair3/{claire3_model}/{bam_name}/full_alignment.vcf.gz")),
-        full_al_vcf_tbi = temp(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/clair3/{claire3_model}/{bam_name}/full_alignment.vcf.gz.tbi")),
-        pil_vcf_file = temp(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/clair3/{claire3_model}/{bam_name}/pileup.vcf.gz")),
-        pil_vcf_tbi = temp(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/clair3/{claire3_model}/{bam_name}/pileup.vcf.gz.tbi"))
+        vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/{sample_name}_merge_output.vcf.gz"),
+        vcf_tbi = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/{sample_name}_merge_output.vcf.gz.tbi"),
+        full_al_vcf_file = temp(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/full_alignment.vcf.gz")),
+        full_al_vcf_tbi = temp(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/full_alignment.vcf.gz.tbi")),
+        pil_vcf_file = temp(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/pileup.vcf.gz")),
+        pil_vcf_tbi = temp(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/pileup.vcf.gz.tbi"))
     threads:
         10
     resources:
-        mem_mb = (lambda wildcards, attempt: attempt * 40960),
+        mem_mb = (lambda wildcards, attempt: attempt * 51200),
         time_min = (lambda wildcards, attempt: attempt * 720)
     conda:
         CONDA_ENV_CLAIR3
     shell:
         """
-        run_clair3.sh --bam_fn={input.bam_file} --ref_fn={input.fa_ref} --threads={threads} --platform="ont" --model_path={input.clair3_path} --output={OUTPUT_DIR}/SNV_Calling/clair3/{wildcards.claire3_model}/{wildcards.bam_name}/ --include_all_ctgs && \
-        mv {OUTPUT_DIR}/SNV_Calling/clair3/{wildcards.claire3_model}/{wildcards.bam_name}/merge_output.vcf.gz {output.vcf_file} && \
-        mv {OUTPUT_DIR}/SNV_Calling/clair3/{wildcards.claire3_model}/{wildcards.bam_name}/merge_output.vcf.gz.tbi {output.vcf_tbi}
+        run_clair3.sh --bam_fn={input.bam_file} --ref_fn={input.fa_ref} --threads={threads} --platform="ont" --model_path={input.clair3_path} --output={OUTPUT_DIR}/SNV_Calling/Germline/clair3/{wildcards.clair3_model}/{wildcards.sample_name}/ --include_all_ctgs && \
+        mv {OUTPUT_DIR}/SNV_Calling/Germline/clair3/{wildcards.clair3_model}/{wildcards.sample_name}/merge_output.vcf.gz {output.vcf_file} && \
+        mv {OUTPUT_DIR}/SNV_Calling/Germline/clair3/{wildcards.clair3_model}/{wildcards.sample_name}/merge_output.vcf.gz.tbi {output.vcf_tbi}
 
         """
 
+
+"""
+This rule removes duplicate alignments with same read IDs for pepper_margin_deepvariant
+The other solution could be adding a suffix to keep every primary alignments: https://github.com/kishwarshafin/pepper/issues/67
+"""
+
+def sambamba_markdup_input_bam(wildcards):
+    if config["input_format"] == "bam":
+        index = BAM_NAME.index(wildcards.bam_name)
+        input = SYMLINK_FILES[index]
+    elif config["steps"]["basecalling"]:
+        input = os.path.normpath(OUTPUT_DIR + "/reconcat/" + wildcards.bam_name + "/" + wildcards.bam_name + "_sorted.bam")
+    return input
     
+rule sambamba_markdup:
+    input:
+        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+    output:
+        markdup_bam = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/markdup/{sample_name}.bam")
+    threads:
+        2
+    resources:
+        mem_mb = (lambda wildcards, attempt: attempt * 4096),
+        time_min = (lambda wildcards, attempt: attempt * 60)
+    conda:
+        CONDA_ENV_SAMBAMBA
+    shell:
+        """
+        sambamba markdup -r {input.bam_file} {output.markdup_bam}
+        """
+
+
 """
 This rule makes the SNV Calling by pepper_margin_deepvariant
 """
 
-def pepper_margin_deepvariant_input_bam(wildcards):
-    index = BAM_NAME.index(wildcards.bam_name)
-    return SYMLINK_FILES[index]
-
 rule pepper_margin_deepvariant:
     input:
-        bam_file = pepper_margin_deepvariant_input_bam,
+        bam_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/markdup/{sample_name}.bam"),
         fa_ref = config["references"]["genome"]
     output:
-        os.path.normpath(OUTPUT_DIR + "/SNV_Calling/pepper_margin_deepvariant/{bam_name}/{bam_name}_XXX.vcf.gz") # to do
+        os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/{sample_name}.vcf.gz"),
+        os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/{sample_name}.visual_report.html")
     threads:
         10
     resources:
@@ -71,14 +92,14 @@ rule pepper_margin_deepvariant:
         path_fa_ref = os.path.dirname(config["references"]["genome"])
     shell:
         """
-        TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
-        singularity exec --contain --B {OUTPUT_DIR},{params.path_fa_ref} -B ${{TMP_DIR}}:/tmp {SING_ENV_PEPPER_DEEPVARIANT} run_pepper_margin_deepvariant call_variant \
+        temp=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
+        singularity exec --contain -B {OUTPUT_DIR},{params.path_fa_ref} -B ${{temp}}:${{TEMPDIR}} {SING_ENV_PEPPER_DEEPVARIANT} run_pepper_margin_deepvariant call_variant \
         --bam {input.bam_file} \
         --fasta {input.fa_ref} \
-        --output_dir {OUTPUT_DIR}/SNV_Calling/pepper_margin_deepvariant/{wildcards.bam_name}/ \
-        --output_prefix {wildcards.bam_name}_ \
+        --output_dir {OUTPUT_DIR}/SNV_Calling/Germline/pepper_margin_deepvariant/{wildcards.sample_name}/ \
+        --output_prefix {wildcards.sample_name} \
         --threads {threads} \
-        --sample_name {wildcards.bam_name} \
+        --sample_name {wildcards.sample_name} \
         --ont_r10_q20
-
+ 
         """

@@ -1,0 +1,55 @@
+BootStrap: docker
+From: ubuntu:22.04
+
+#build image
+#sudo singularity build vcf2maf_1.6.22.simg vcf2maf_1.6.22.def
+#using image
+#singularity exec --no-home vcf2maf_1.6.22.simg vcf2maf.pl --help
+%environment
+	export RETICULATE_MINICONDA_ENABLED=FALSE #ne pas utiliser de miniconda dans le container
+	LANG=en_US.UTF-8
+	LC_TIME=en_US.UTF-8
+	LC_MONETARY=en_US.UTF-8
+	LC_PAPER=en_US.UTF-8
+	LC_MEASUREMENT=en_US.UTF-8
+	#export LANGUAGE=fr_FR:en
+	#export LC_ALL=(unset)
+	#export LC_ADDRESS=fr_FR.UTF-8
+	#export LC_IDENTIFICATION=fr_FR.UTF-8
+	#export LC_NAME=fr_FR.UTF-8
+	#export LC_NUMERIC=fr_FR.UTF-8
+	#export LC_TELEPHONE=fr_FR.UTF-8
+	#export LANG=(unset)
+	export PATH="vcf2maf-1.6.22/:$PATH"
+	export PATH="samtools-1.20/:$PATH"
+
+%post #toutes les lignes de commande qu'on veux qu'il installe
+	echo "Ubuntu version ############"
+	cat /etc/lsb-release #afficher la version de ubuntu qui a été installé
+	apt-get -y update && apt-get -y upgrade
+	#prevent the configuration of timezone data to block the build:
+	ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+	apt-get install -y tzdata
+	dpkg-reconfigure --frontend noninteractive tzdata
+	
+	#Install vcf2maf
+	apt-get -y install wget unzip perl perl-doc libncurses-dev libbz2-dev liblzma-dev
+	wget https://github.com/mskcc/vcf2maf/archive/refs/tags/v1.6.22.zip
+	unzip v1.6.22.zip
+
+	#instlal Samtools
+	apt-get -y install tar bzip2 zlib1g-dev build-essential
+	wget https://github.com/samtools/samtools/releases/download/1.20/samtools-1.20.tar.bz2
+	tar -xvjf samtools-1.20.tar.bz2
+	cd samtools-1.20/
+	./configure
+	make
+	make install
+
+	wget https://github.com/samtools/htslib/releases/download/1.20/htslib-1.20.tar.bz2
+	tar -xvjf htslib-1.20.tar.bz2
+        cd htslib-1.20/
+        ./configure
+        make
+        make install
+

@@ -1,17 +1,33 @@
-intro_text: False
+title: "BiGR Long-Reads Bulk DNA pipeline Report"
+intro_text: "This report summarises the quality control of the analysis."
 report_header_info:
-  - Contact E-mail: "bigr@gustaveroussy.fr"
-  - Application Type: "Nanopore Long read DNA-seq"
-  - Sequencing Platform: "PromethION 48"
+    - Contact E-mail: "bigr@gustaveroussy.fr"
+    - Application Type: "Nanopore Long reads DNA-seq"
+    - Sequencing Platform: "PromethION 48"
 
-top_modules:
-  - "nanostat"
-  - "qualimap"
-  - "mosdepth"
+module_order:
+    - fastqc
+    - fastq_screen
+    - nanostat
+    - qualimap
+    - mosdepth
+    - custom_content:
+        name: "Methylation QC"
+        path_filters:
+            - "*barplot_methylated_CG_*_mqc.png"
+            - "*per_pos_per_strand_gam_ratio_*_chr*_*_mqc.png"
   
-custom_logo: "/mnt/beegfs/pipelines/long-reads-bulk/v0_test/images/bigr_ContourBlanc_96dpi_100x100.png"
+custom_logo: "/mnt/beegfs/pipelines/bigr_long-reads_bulk/2.0.0/images/bigr_ContourBlanc_96dpi_100x100.png"
 custom_logo_title: "Bioinformatics Core Facility - Gustave Roussy"
 
+fn_clean_exts:
+    - "_wgs_mode"
+    - "_sorted"
+    - ".fastq.gz"
+    - "_screen.txt"
+  
 software_versions:
-  nanostat: "1.42.0"
-  qualimap: "2.3"
+    nanostat: "1.42.0"
+    qualimap: "2.3"
+    mosdepth: "0.3.4"
+    pipeline: "2.0.0"

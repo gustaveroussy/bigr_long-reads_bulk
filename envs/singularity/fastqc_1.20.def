@@ -1,0 +1,29 @@
+BootStrap: docker
+From: ubuntu:22.04
+
+#build image
+#sudo singularity build fastqc_1.20.simg fastqc_1.20.def
+#using image
+#singularity exec --no-home fastqc_1.20.simg fastqc --help
+%environment
+	export RETICULATE_MINICONDA_ENABLED=FALSE #ne pas utiliser de miniconda dans le container
+	LANG=en_US.UTF-8
+	LC_TIME=en_US.UTF-8
+	LC_MONETARY=en_US.UTF-8
+	LC_PAPER=en_US.UTF-8
+	LC_MEASUREMENT=en_US.UTF-8
+	export PATH="/FastQC/:$PATH"
+
+%post #toutes les lignes de commande qu'on veux qu'il installe
+	echo "Ubuntu version ############"
+	cat /etc/lsb-release #afficher la version de ubuntu qui a été installé
+	apt-get -y update && apt-get -y upgrade
+	#prevent the configuration of timezone data to block the build:
+	ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+	apt-get install -y tzdata
+	dpkg-reconfigure --frontend noninteractive tzdata
+	
+	#Install FastQC
+	apt-get -y install perl default-jre wget unzip
+	wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip
+	unzip fastqc_v0.12.1.zip

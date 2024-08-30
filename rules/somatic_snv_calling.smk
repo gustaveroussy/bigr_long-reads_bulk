@@ -3,29 +3,19 @@
 These rules make the SNV Calling for somatic variants 
 ##########################################################################
 """
-wildcard_constraints:
-    sample_name = '|'.join([x for x in SAMPLE_NAME])
 
 """
-This rule makes the SNV Calling by clair3 with various models
+This rule makes the SNV Calling by clairS with various models
 """
-
-def clairs_input_normal_bam(wildcards):
-    index = BAM_NAME.index(wildcards.sample_name + "_normal")
-    return SYMLINK_FILES[index]
-
-def clairs_input_tumor_bam(wildcards):
-    index = BAM_NAME.index(wildcards.sample_name + "_tumor")
-    return SYMLINK_FILES[index]
 
 rule clairs:
     input:
-        normal_bam_file = clairs_input_normal_bam,
-        tumor_bam_file = clairs_input_tumor_bam,
+        normal_bam_file = get_input_normal_bam,
+        tumor_bam_file = get_input_tumor_bam,
         fa_ref = config["references"]["genome"],
     output:
-        snv_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/clairs/{sample_name}/{sample_name}_snv.vcf.gz"),
-        indel_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/clairs/{sample_name}/{sample_name}_indel.vcf.gz")
+        snv_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/{pair_somatic}_snv.vcf.gz"),
+        indel_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/{pair_somatic}_indel.vcf.gz")
     threads:
         10
     resources:
@@ -46,10 +36,10 @@ rule clairs:
           --ref_fn {input.fa_ref} \
           --threads {threads} \
           --platform {params.model} \
-          --output_dir {OUTPUT_DIR}/SNV_Calling/clairs/{wildcards.sample_name} \
-          --output_prefix {wildcards.sample_name}_snv \
-          --indel_output_prefix {wildcards.sample_name}_indel \
-          --sample_name {wildcards.sample_name} \
+          --output_dir {OUTPUT_DIR}/SNV_Calling/Somatic/clairs/{wildcards.pair_somatic} \
+          --output_prefix {wildcards.pair_somatic}_snv \
+          --indel_output_prefix {wildcards.pair_somatic}_indel \
+          --sample_name {wildcards.pair_somatic} \
           --include_all_ctgs \
           --remove_intermediate_dir \
           --conda_prefix /opt/conda/envs/clairs \
