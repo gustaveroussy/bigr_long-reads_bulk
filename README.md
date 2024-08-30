@@ -210,7 +210,7 @@ snakemake --profile ${LR_pipeline}/profiles/slurm \
 | SNV annotation         | [SnpEff](https://pcingola.github.io/SnpEff/snpeff/introduction/), [SnpSift](https://pcingola.github.io/SnpEff/snpsift/introduction/)                   | Annotate Single-Nucleotide Variants using ClinVar and/or dbNSFP                                              |
 | SNV filtering          | [SnpSift](https://pcingola.github.io/SnpEff/snpsift/introduction/)                           | Filter depending on the parameters entered in the config file                                                |
 | SNV graphs             | [vcf2maf](https://github.com/mskcc/vcf2maf), [maftools (R)](https://github.com/PoisonAlien/maftools)             | Convert VCF to MAF file and generate general graphs by sample and graphs by gene if given in the config file |
-| SV calling             | [Sniffles2](https://github.com/fritzsedlazeck/Sniffles), [cuteSV](https://github.com/tjiangHIT/cuteSV)                 | Call structural variants                                                                                     |
+| SV calling             | [Sniffles2](https://github.com/fritzsedlazeck/Sniffles), [cuteSV](https://github.com/tjiangHIT/cuteSV)                 | Call Structural Variants                                                                                     |
 | SV annotation          | [AnnotSV](https://github.com/lgmgeo/AnnotSV)                           | Annotate SV                                                                                                  |
 | SV graphs              | [Sniffles2_plot](https://github.com/farhangus/Sniffles2_plot)                    | Generate general graphs by sample                                                                            |
 | Long CNV calling       | [Spectre](https://github.com/fritzsedlazeck/Spectre)                           | Call long CNV >100kb                                                                                         |
@@ -218,10 +218,10 @@ snakemake --profile ${LR_pipeline}/profiles/slurm \
 |    **Step**    |        **Tool**       |                                                **Description**                                               |
 |:--------------:|:---------------------:|:------------------------------------------------------------------------------------------------------------:|
 | SNV calling    | [ClairS](https://github.com/HKU-BAL/ClairS)                | Call somatic Single-Nucleotide Variants                                                                      |
-| SNV annotation | [SnpEff](https://pcingola.github.io/SnpEff/snpeff/introduction/), [SnpSift](https://pcingola.github.io/SnpEff/snpsift/introduction/)       | Annotate small variants using ClinVar and/or dbNSFP                                                          |
+| SNV annotation | [SnpEff](https://pcingola.github.io/SnpEff/snpeff/introduction/), [SnpSift](https://pcingola.github.io/SnpEff/snpsift/introduction/)       | Annotate Single-Nucleotide Variants using ClinVar and/or dbNSFP                                                          |
 | SNV filtering  | [SnpSift](https://pcingola.github.io/SnpEff/snpsift/introduction/)               | Filter depending on the parameters entered in the config file                                                |
 | SNV graphs     | [vcf2maf](https://github.com/mskcc/vcf2maf), [maftools (R)](https://github.com/PoisonAlien/maftools) | Convert VCF to MAF file and generate general graphs by sample and graphs by gene if given in the config file |
-| SV calling     | [nanomonsv](https://github.com/friend1ws/nanomonsv)             | Call somatic structural variants                                                                             |
+| SV calling     | [nanomonsv](https://github.com/friend1ws/nanomonsv)             | Call somatic Structural Variants                                                                             |
 | SV annotation  | [AnnotSV](https://github.com/lgmgeo/AnnotSV)               | Annotate SV                                                                                                  |
 ### Phasing
 |   **Step**   | **Tool** |                                                             **Description**                                                            |
