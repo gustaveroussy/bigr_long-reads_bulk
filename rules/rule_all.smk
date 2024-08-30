@@ -248,7 +248,7 @@ def get_targets():
   if config["steps"]["sv_calling"]:
       #GERMLINE
       if config["variant_calling_mode"] == "germline":
-        targets["sv_calling"]=[
+        targets["germline_sv_calling"]=[
             #sniffles
             expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/sniffles/{sample_name}/{sample_name}_SV.vcf"), sample_name=SAMPLE_NAME),
             expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/sniffles/{sample_name}/{sample_name}_SV.snf"), sample_name=SAMPLE_NAME),
@@ -264,7 +264,7 @@ def get_targets():
                 expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/cuteSV/{sample_name}/AnnotSV/{sample_name}{compl_SV}.annotated.tsv"), sample_name=SAMPLE_NAME, compl_SV=["_SV"]),
                 expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/cuteSV/{sample_name}/AnnotSV/{sample_name}{compl_SV}.annotated.vcf"), sample_name=SAMPLE_NAME, compl_SV=["_SV"])
             ]
-        targets["sv_graphs"]=[
+        targets["germline_sv_graphs"]=[
             #sniffles & sniffles2_plot
             expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/sniffles/{sample_name}/sniffles2_plot/{sample_name}.png"), sample_name=SAMPLE_NAME),
             expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/sniffles/{sample_name}/sniffles2_plot/del_ins_genotype.jpg"), sample_name=SAMPLE_NAME),
@@ -289,7 +289,7 @@ def get_targets():
       
       #SOMATIC
       if config["variant_calling_mode"] == "somatic":
-        targets["sv_calling"]=[
+        targets["somatic_sv_calling"]=[
             #nanomonsv
             expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Somatic/nanomonsv/{pair_somatic}/{sample_name}.deletion.sorted.bed.gz"), zip, pair_somatic=PAIR_SOMATIC, sample_name=list(dict.fromkeys(SAMPLE_NAME))), #"list(dict.fromkeys(" removes duplicate SAMPLE_NAME du to BATCH_NAME duplication  in  methylation part; needed beacause of "zip" using for expand()
             expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Somatic/nanomonsv/{pair_somatic}/{sample_name}.deletion.sorted.bed.gz.tbi"), zip, pair_somatic=PAIR_SOMATIC, sample_name=list(dict.fromkeys(SAMPLE_NAME))),
@@ -306,13 +306,13 @@ def get_targets():
         ]
         #nanomonsv & AnnotSV
         if config["references"]["genome_annotsv"] != "" : 
-            targets["sv_annotation"]=[
+            targets["somatic_sv_annotation"]=[
                 expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Somatic/nanomonsv/{pair_somatic}/AnnotSV/{pair_somatic}{compl_SV}.annotated.vcf"), pair_somatic=PAIR_SOMATIC, compl_SV=[".nanomonsv.result"]),
                 expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Somatic/nanomonsv/{pair_somatic}/AnnotSV/{pair_somatic}{compl_SV}.annotated.tsv"), pair_somatic=PAIR_SOMATIC, compl_SV=[".nanomonsv.result"])
             ]
         #if config["references"]["genome_annotsv"] == "hg38":
             #nanomonsv classifier
-            #targets["sv_calling"].append(expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Somatic/nanomonsv/{pair_somatic}/{pair_somatic}.nanomonsv.insert_classify.txt"), pair_somatic=PAIR_SOMATIC))
+            #targets["somatic_sv_calling"].append(expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Somatic/nanomonsv/{pair_somatic}/{pair_somatic}.nanomonsv.insert_classify.txt"), pair_somatic=PAIR_SOMATIC))
   
   #COPY NUMBER VARIANT CALLING
   if config["steps"]["cnv_calling"]:
