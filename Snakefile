@@ -138,8 +138,7 @@ if config["steps"]["alignment"] or config["input_format"] == "bam" :
         elif MODEL_METH in locals() :
             METH_TYPE = list_meth_type(DORADO_MODEL)
         else: sys.exit("Error: 'meth_type' in 'dorado_basecaller' have to be set. Check your configuration file.")
-        print(METH_TYPE)
-    
+
 
 # PREPROCESSING AND METHYLATION ANALYSIS
 if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"]:
@@ -159,7 +158,6 @@ if config["steps"]["differential_methylation_sample"] or config["steps"]["differ
     elif MODEL_METH in locals() :
         METH_TYPE = list_meth_type(DORADO_MODEL)
     else: sys.exit("Error: 'meth_type' in 'dorado_basecaller' have to be set. Check your configuration file.")
-    print(METH_TYPE)
     REF_TYPE=["Alu","Transcript","CpG"]
     STRAND=["fwd","rev"]
     
@@ -380,10 +378,10 @@ if config["steps"]["basecalling"]:
             BATCH_FOLDER = split_pod5_size(design["path_file"].iloc[line],OUTPUT_DIR,design["sample_id"].iloc[line],20000000000)
             SAMPLE_NAME = SAMPLE_NAME + ([design["sample_id"].iloc[line]] * len(BATCH_FOLDER))
             BATCH_NAME = BATCH_NAME + BATCH_FOLDER
-        print("BATCH_NAME:")
-        print(BATCH_NAME)
-        print("SAMPLE_NAME:")
-        print(SAMPLE_NAME)
+        #print("BATCH_NAME:")
+        #print(BATCH_NAME)
+        #print("SAMPLE_NAME:")
+        #print(SAMPLE_NAME)
     else: sys.exit("To make 'basecalling', 'input_format' have to be 'pod5'. Check your design file")
 
 # Make the data structure for UBAM files as input
