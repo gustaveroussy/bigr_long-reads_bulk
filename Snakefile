@@ -173,6 +173,7 @@ if 'variant_calling_mode' in config:
             # environments
             CONDA_ENV_CLAIR3 = PIPELINE_DIR + "/envs/conda/clair3.yaml"
             SING_ENV_PEPPER_DEEPVARIANT = PIPELINE_DIR + "/envs/singularity/pepper_deepvariant_r0.8.sif"
+            CONDA_ENV_SAMBAMBA = PIPELINE_DIR + "/envs/conda/sambamba.yaml"
             # parameters
             if 'clair3' in config and 'model' in config['clair3']:
                 CLAIR3_MODEL = config["clair3"]["model"]
