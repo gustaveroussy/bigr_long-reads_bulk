@@ -55,7 +55,7 @@ This rule generates QC for fastq file to check contaminations
 
 rule fastq_screen:
     input:
-        fastq_file = os.path.normpath(OUTPUT_DIR + "/Quality_Control/fastq_QC/{sample_name}.fastq.gz"),
+        fastq_file = os.path.normpath(OUTPUT_DIR + "/Fastq/{sample_name}.fastq.gz"),
         config = config["references"]["fastq_screen_conf"]
     output:
         os.path.normpath(OUTPUT_DIR + "/Quality_Control/fastq_QC/fastq_screen/{sample_name}/{sample_name}_screen.txt"),
