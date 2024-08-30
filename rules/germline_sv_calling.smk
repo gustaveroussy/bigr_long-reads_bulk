@@ -34,7 +34,7 @@ This rule merges the SV Calling by sniffles for all samples
 
 rule merge_sniffles:
     input:
-        snf_files = expand(os.path.normpath(OUTPUT_DIR + + "/SV_Calling/Germline/sniffles/" + {sample_name} + "/" + {sample_name} + "_SV.snf"), sample_name = SAMPLE_NAME)
+        snf_files = expand(os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/sniffles/" + {sample_name} + "/" + {sample_name} + "_SV.snf"), sample_name = SAMPLE_NAME)
     output:
         vcf_file = os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/sniffles/all_samples/all_samples_SV.vcf")
     threads:
