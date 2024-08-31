@@ -63,6 +63,5 @@ maftools:
   genes_of_interest: "path/to/my_genes_list.txt"
 
 # CNV parameters
-#spectre:
-#  blacklist: ""
-#  cancer_sample: TRUE
+spectre:
+  blacklist: ""

@@ -64,5 +64,4 @@ maftools:
 
 # CNV parameters
 spectre:
-#  blacklist: ""
-  cancer_sample: TRUE
+  blacklist: ""
