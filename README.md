@@ -101,14 +101,15 @@ It must be a comma separated file (.csv where comma is ",") and its path should 
 - **path_file _(required)_**: absolute path to the BAM file or to the POD5 directory.
 - **methyl_group _(optional)_**: name of the group/condition corresponding to the sample, it will be used only for DMR analysis. You can only use 2 groups/conditions at the moment, named `case` and `control`.
 - **somatic_ctrl _(optional)_**: sample id corresponding to the normal sample.
+- **cnv_cancer _(optional)_**: boolean to identify the sample as normal or cancer sample, for CNV analysis.
 
 <ins>Example:</ins>
 ```
-sample_id,path_file,methyl_group,somatic_ctrl
-sample1_Tumor,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample1_Tumor/,case,sample1_Normal
-sample1_Normal,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample1_Normal/,control,
-sample2_Tumor,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample2_Tumor/,case,sample2_Normal
-sample2_Normal,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample2_Normal/,control,
+sample_id,path_file,methyl_group,somatic_ctrl,cnv_cancer
+sample1_Tumor,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample1_Tumor/,case,sample1_Normal,TRUE
+sample1_Normal,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample1_Normal/,control,,FALSE
+sample2_Tumor,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample2_Tumor/,case,sample2_Normal,TRUE
+sample2_Normal,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample2_Normal/,control,,FALSE
 ```
 
 <details>

@@ -34,6 +34,12 @@ rule cnv_mosdepth:
 """
 This rule makes the CNV Calling by Spectre
 """
+def input_cancer(wildcards):
+    index = CNV_SAMPLE_NAME.index(wildcards.sample_name)
+    if CNV_CANCER_BOOL[index]:
+        return "--cancer"
+    else:
+        return ""
 
 rule spectre_cnv:
     input:
@@ -50,7 +56,8 @@ rule spectre_cnv:
         mem_mb = (lambda wildcards, attempt: attempt * 4096),
         time_min = (lambda wildcards, attempt: attempt * 60)
     params:
-        chromos_list = [x for x in CHR_NUMBER if x not in ["MT","M"]]
+        chromos_list = [x for x in CHR_NUMBER if x not in ["MT","M"]],
+        cancer = input_cancer
     conda:
         CONDA_ENV_SPECTRE
     shell:
@@ -59,7 +66,7 @@ rule spectre_cnv:
         --coverage {input.regions} \
         --sample-id {wildcards.sample_name} \
         --output-dir {OUTPUT_DIR}/CNV_Calling/spectre/{wildcards.sample_name}/ \
-        --reference {input.fa_ref} {EXTRA_PARAMS_SPECTRE} \
+        --reference {input.fa_ref} {EXTRA_PARAMS_SPECTRE} {params.cancer} \
         --only-chr {params.chromos_list}
         
         cd {OUTPUT_DIR}/CNV_Calling/spectre/{wildcards.sample_name}/img/
@@ -69,5 +76,6 @@ rule spectre_cnv:
         mv ${{file}} $[[new_name}}
         done
         
-        
         """
+
+    

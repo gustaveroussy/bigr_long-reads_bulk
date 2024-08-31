@@ -129,6 +129,7 @@ if config["steps"]["alignment"] or config["input_format"] == "bam" :
     if config['basecalling_mode'] == "methylation":
         # environments
         SING_ENV_GENEDMR = "/mnt/beegfs/pipelines/bigr_long-reads_bulk/dev_test/envs/singularity/GeneDMR.simg"
+        TOOL_MODKIT = "/mnt/beegfs/pipelines/dorado/tools/modkit_v0.2.6/dist/modkit"
         # parameters
         def list_meth_type(list_of_model):
         	type_meth=[ re.split("@v[0-9\.]+",x)[-2].split("_")[1:] for x in list_of_model[1:]]
@@ -144,7 +145,6 @@ if config["steps"]["alignment"] or config["input_format"] == "bam" :
 if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"]:
 
     # environments
-    TOOL_MODKIT = "/mnt/beegfs/pipelines/dorado/tools/modkit_v0.2.6/dist/modkit"
     SING_ENV_GENEDMR = "/mnt/beegfs/pipelines/bigr_long-reads_bulk/dev_test/envs/singularity/GeneDMR.simg"
     CONDA_ENV_SAMTOOLS = PIPELINE_DIR + "/envs/conda/samtools_1.11.yaml"
     
@@ -258,9 +258,6 @@ if config["steps"]["cnv_calling"]:
                 if os.path.exists(config["spectre"]["blacklist"]):
                     EXTRA_PARAMS_SPECTRE = EXTRA_PARAMS_SPECTRE + "--blacklist " + config["spectre"]["blacklist"]
                 else: sys.exit("Error: 'blacklist' file not found. Check your configuration file.")
-        if config["spectre"]["cancer_sample"]:
-            EXTRA_PARAMS_SPECTRE = EXTRA_PARAMS_SPECTRE + " --cancer "
-
 
 sys.stderr.write("Parameters validated.\n")
 
@@ -272,31 +269,18 @@ if "design" in config:
     design = pd.read_table(config["design"], sep=",")
 else: sys.exit("Error: 'design' have to be set. Check your configuration file.")
 
-# FASTQ as input file
+format_design = ["sample_id"]
 if config["input_format"] == "fastq":
-    if config["steps"]["differential_methylation_condition"]:
-        if config["variant_calling_mode"] == "somatic":
-            format_design = ["sample_id","upstream_fastq_file","downstream_fastq_file","methyl_group","somatic_ctrl"]
-        else:
-            format_design = ["sample_id","upstream_fastq_file","downstream_fastq_file","methyl_group"]
-    else:
-        if config["variant_calling_mode"] == "somatic":
-            format_design = ["sample_id","upstream_fastq_file","downstream_fastq_file","somatic_ctrl"]
-        else:
-            format_design = ["sample_id", "upstream_fastq_file", "downstream_fastq_file"]
-
-#POD5, BAM, UBAM as input file
+    format_design.append("upstream_fastq_file")
+    format_design.append("downstream_fastq_file")
 else:
-    if config["steps"]["differential_methylation_condition"]:
-        if config["variant_calling_mode"] == "somatic":
-            format_design = ["sample_id", "path_file", "methyl_group", "somatic_ctrl"]
-        else:
-            format_design = ["sample_id","path_file","methyl_group"]
-    else:
-        if config["variant_calling_mode"] == "somatic":
-            format_design = ["sample_id", "path_file", "somatic_ctrl"]
-        else:
-            format_design = ["sample_id","path_file"]
+    format_design.append("path_file")
+if config["steps"]["differential_methylation_condition"]:
+    format_design.append("methyl_group")
+if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "somatic":
+    format_design.append("somatic_ctrl")
+if config["steps"]["cnv_calling"]:
+    format_design.append("cnv_cancer")
 
 # Check design file:
 if set(format_design).issubset(design.columns):
@@ -331,7 +315,7 @@ else:
         if config["input_format"] == "ubam" and not os.path.isfile(design["path_file"].iloc[i]): sys.exit(design["path_file"].iloc[i] + " ubam file doesn't exist. Check your design file.")
 
 #Check if somatic_ctrl is not the same as its sample_id
-if config["variant_calling_mode"] == "somatic":
+if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "somatic":
     for i in range(0, len(design["sample_id"]), 1):
         if design["sample_id"].iloc[i] == design["somatic_ctrl"].iloc[i]:
             print("Error: somatic_ctrl and sample_id have to be different on the same line.")
@@ -343,7 +327,7 @@ if config["variant_calling_mode"] == "somatic":
 sys.stderr.write("Design information appears correct.\n")
 #to do: check if there is no "_vs_" in sample_id and methyl_group.
 
-################### Creating needed data structures depending of data input ###################
+################### Creating needed data structures ###################
 
 # Function to create POD5 links
 def split_pod5_size(indir, outdir, sample, max_size):
@@ -392,7 +376,7 @@ if config["steps"]["alignment"]:
     elif config["input_format"] == "bam": sys.exit("To make 'alignment', 'input_format' have to be 'pod5' or 'ubam'. Check your design file")
 
 # Make the data structure for BAM files as input
-if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"] or config["steps"]["snv_calling"] or config["steps"]["sv_calling"]:
+if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"] or config["steps"]["snv_calling"] or config["steps"]["sv_calling"] or config["steps"]["cnv_calling"]:
     if config["input_format"] == "bam":
         print("input format is BAM file.")
         SAMPLE_NAME = []
@@ -402,6 +386,11 @@ if config["steps"]["differential_methylation_sample"] or config["steps"]["differ
             SAMPLE_NAME.append(design["sample_id"].iloc[line])
             ORIG_FILE.append(design["path_file"].iloc[line])
             SYMLINK_FILES.append(os.path.normpath(OUTPUT_DIR + "/concat_sort/" + design["sample_id"].iloc[line] + "/" + design["sample_id"].iloc[line] + "_sorted.bam"))
+
+# Make the data structure for CNV cancer parameter
+if config["steps"]["cnv_calling"]:
+    CNV_SAMPLE_NAME = design["sample_id"].tolist()
+    CNV_CANCER_BOOL = design["cnv_cancer"].tolist()
 
 
 ################### Creating needed data structures for paired analyses ###################
@@ -420,7 +409,7 @@ if config["steps"]["differential_methylation_condition"]:
     print("CONTROL:")
     print(CONTROL)
 
-if config["variant_calling_mode"] == "somatic":
+if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "somatic":
     PAIR_SOMATIC = []
     PAIR_SOMATIC_duplicate = []
     for i in range(0, len(design["sample_id"]), 1):
@@ -449,18 +438,16 @@ if config["steps"]["snv_calling"]:
     wildcard_constraints:
         filter = '|'.join([x for x in SNPSIFT_FILTERS_NAMES])
 
-if config["variant_calling_mode"] == "somatic":
+if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "somatic":
     wildcard_constraints:
         pair_somatic = '|'.join([x for x in PAIR_SOMATIC]),
         sample_name_and_all_samples = ("|".join(SAMPLE_NAME) + "|all_samples|" + "|".join(PAIR_SOMATIC)),
         variant_calling_mode = "Somatic"
         
-
-if config["variant_calling_mode"] == "germline":
+if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "germline":
     wildcard_constraints:
         sample_name_and_all_samples = ("|".join(SAMPLE_NAME) + "|all_samples"),
         variant_calling_mode = "Germline"
-
 
 if config["steps"]["differential_methylation_condition"]:
     wildcard_constraints:
