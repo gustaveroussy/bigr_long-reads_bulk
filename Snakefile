@@ -48,7 +48,7 @@ else:
 if "references" not in config or "genome" not in config["references"]:
     sys.exit("No reference fasta found for 'genome'. Check your configuration file.")
 #else:
-    #sys.stderr.write("The reference used is:")
+    #sys.stderr.write("The reference used is:\n")
     #sys.stderr.write(config["references"]["genome"] + "\n\n")
 if "references" in config and "chromosomes" in config["references"]:
     CHR_NUMBER = config["references"]["chromosomes"]
@@ -212,7 +212,7 @@ if 'variant_calling_mode' in config:
         if 'maftools' in config and 'genes_of_interest' in config['maftools']:
             GENES_FILE = config["maftools"]["genes_of_interest"]
         else:
-            print("No genes file found.")
+            sys.stderr.write("No genes file found.\n")
             GENES_FILE = ""
 
         SNPEFF_SUFFIX = ""
@@ -297,8 +297,8 @@ if not len(set(design["sample_id"])) == len(design["sample_id"]):
 if config["input_format"] == "fastq":
     for i in range(0, len(design["sample_id"]), 1):
         if design["upstream_fastq_file"].iloc[i] == design["downstream_fastq_file"].iloc[i]:
-            print("Error: upstream_fastq_file and downstream_fastq_file have to be different:")
-            print("Line " + str(i+1) + " of design file: " + design["upstream_fastq_file"].iloc[i] + " same as " + design["downstream_fastq_file"].iloc[i])
+            sys.stderr.write("Error: upstream_fastq_file and downstream_fastq_file have to be different:\n")
+            sys.stderr.write("Line " + str(i+1) + " of design file: " + design["upstream_fastq_file"].iloc[i] + " same as " + design["downstream_fastq_file"].iloc[i] + ".\n")
             sys.exit("Check your design file!")
         if not os.path.isfile(design["upstream_fastq_file"].iloc[i]): sys.exit(design["upstream_fastq_file"].iloc[i] + " file doesn't exist. Check your design file.")
         if not os.path.isfile(design["downstream_fastq_file"].iloc[i]): sys.exit(design["upstream_fastq_file"].iloc[i] + " file doesn't exist. Check your design file.")
@@ -318,8 +318,8 @@ else:
 if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "somatic":
     for i in range(0, len(design["sample_id"]), 1):
         if design["sample_id"].iloc[i] == design["somatic_ctrl"].iloc[i]:
-            print("Error: somatic_ctrl and sample_id have to be different on the same line.")
-            print("Line " + str(i+1) + " of design file: " + design["sample_id"].iloc[i] + " same as " + design["somatic_ctrl"].iloc[i])
+            sys.stderr.write("Error: somatic_ctrl and sample_id have to be different on the same line.\n")
+            sys.stderr.write("Line " + str(i+1) + " of design file: " + design["sample_id"].iloc[i] + " same as " + design["somatic_ctrl"].iloc[i] + ".\n")
             sys.exit("Check your design file.")
         if not pd.isna(design["somatic_ctrl"].iloc[i]) and not design["somatic_ctrl"].iloc[i] in design["sample_id"].tolist(): 
             sys.exit("somatic_ctrl " + str(design["somatic_ctrl"].iloc[i]) + " is not in sample_id column. Check your design file")
@@ -355,30 +355,30 @@ def split_pod5_size(indir, outdir, sample, max_size):
 # Make the data structure for pod5 files as input
 if config["steps"]["basecalling"]:
     if config["input_format"] == "pod5":
-        print("input format is POD5 files.")
+        sys.stderr.write("Input format is POD5 files.\n")
         SAMPLE_NAME = []
         BATCH_NAME = []
         for line in range(0, len(design["path_file"]), 1):
             BATCH_FOLDER = split_pod5_size(design["path_file"].iloc[line],OUTPUT_DIR,design["sample_id"].iloc[line],20000000000)
             SAMPLE_NAME = SAMPLE_NAME + ([design["sample_id"].iloc[line]] * len(BATCH_FOLDER))
             BATCH_NAME = BATCH_NAME + BATCH_FOLDER
-        #print("BATCH_NAME:")
-        #print(BATCH_NAME)
-        #print("SAMPLE_NAME:")
-        #print(SAMPLE_NAME)
+        #sys.stderr.write("BATCH_NAME:\n")
+        #sys.stderr.write(', '.join(BATCH_NAME) + "\n")
+        #sys.stderr.write("SAMPLE_NAME:\n")
+        #sys.stderr.write(', '.join(SAMPLE_NAME) + "\n")
     else: sys.exit("To make 'basecalling', 'input_format' have to be 'pod5'. Check your design file")
 
 # Make the data structure for UBAM files as input
 if config["steps"]["alignment"]:
     if config["input_format"] == "ubam":
-        print("input format is UBAM file.")
+        sys.stderr.write("Input format is UBAM file.\n")
     # to to
     elif config["input_format"] == "bam": sys.exit("To make 'alignment', 'input_format' have to be 'pod5' or 'ubam'. Check your design file")
 
 # Make the data structure for BAM files as input
 if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"] or config["steps"]["snv_calling"] or config["steps"]["sv_calling"] or config["steps"]["cnv_calling"]:
     if config["input_format"] == "bam":
-        print("input format is BAM file.")
+        sys.stderr.write("Input format is BAM file.\n")
         SAMPLE_NAME = []
         ORIG_FILE = []
         SYMLINK_FILES = []
@@ -398,16 +398,16 @@ if config["steps"]["cnv_calling"]:
 if config["steps"]["differential_methylation_sample"]:
     PAIR_TMP=list(itertools.permutations(list(design['sample_id']),2))
     PAIR_METHYL=["_vs_".join(elms) for elms in PAIR_TMP]
-    print("PAIR_METHYL: ")
-    print(PAIR_METHYL)
+    sys.stderr.write("PAIR_METHYL:\n")
+    sys.stderr.write(', '.join(PAIR_METHYL) + "\n")
 
 if config["steps"]["differential_methylation_condition"]:
     CASE=list(design[design.methyl_group == 'case']['sample_id'])
     CONTROL=list(design[design.methyl_group == 'control']['sample_id'])
-    print("CASE:")
-    print(CASE)
-    print("CONTROL:")
-    print(CONTROL)
+    sys.stderr.write("CASE:\n")
+    sys.stderr.write(', '.join(CASE) + "\n")
+    sys.stderr.write("CONTROL:\n")
+    sys.stderr.write(', '.join(CONTROL) + "\n")
 
 if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "somatic":
     PAIR_SOMATIC = []
@@ -417,8 +417,8 @@ if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config[
             PAIR_SOMATIC = PAIR_SOMATIC + [ design["sample_id"].iloc[i] + "_vs_" + design["somatic_ctrl"].iloc[i] ]
         else:
             PAIR_SOMATIC = PAIR_SOMATIC + [ design[design.somatic_ctrl == design["sample_id"].iloc[i]]["sample_id"].iloc[0] + "_vs_" + design["sample_id"].iloc[i] ]
-    print("PAIR_SOMATIC:")
-    print(PAIR_SOMATIC)
+    sys.stderr.write("PAIR_SOMATIC:\n")
+    sys.stderr.write(', '.join(PAIR_SOMATIC) + "\n")
 
 
 ################### Wilcards Constraints ###################
