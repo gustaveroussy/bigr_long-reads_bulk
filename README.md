@@ -27,7 +27,7 @@ This pipeline is designed to perform :
 - Long Copy Number Variations (CNV) identification
 - Phasing
 
-Go to [pipeline detailed description](#mag_right-pipeline-detailed-description) to see details about each pipeline step and major rules.
+Go to [pipeline detailed description](#mag_right-pipeline-detailed-description) to see details about each pipeline step and watch the rule order on the [rulegraph](images/rulegraph.png).
 
 ***
 
