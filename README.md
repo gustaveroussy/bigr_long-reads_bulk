@@ -20,9 +20,10 @@ POD5 directory or BAM files (aligned BAM) are accepted as input.
 
 This pipeline is designed to perform :
 - Preprocessing: Basecalling and Methylation calling
+- Alignment
 - Quality control
 - Differential Methylated Regions (DMR) analysis between alls samples and/or between two conditions
-- Germline and Somatic Single Nucleotid Variants (SNV) identification
+- Germline and Somatic Single Nucleotide Variants (SNV) identification
 - Germline and Somatic Structural Variants (SV) identification
 - Long Copy Number Variations (CNV) identification
 - Phasing
