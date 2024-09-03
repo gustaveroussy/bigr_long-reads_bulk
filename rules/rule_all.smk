@@ -318,7 +318,7 @@ def get_targets():
   if config["steps"]["cnv_calling"]:
     targets["cnv_calling"]=[
         #spectre
-        expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}.vcf"), sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}.vcf.gz"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}_cnv.bed.gz"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}_cnv.bed.gz.tbi"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/img/{sample_name}_plot_cnv_chr_{chromos}.png"), sample_name=SAMPLE_NAME, chromos=[x for x in CHR_NUMBER if x not in ["MT","M"]])
