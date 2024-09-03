@@ -87,7 +87,7 @@ rule pepper_margin_deepvariant:
         10
     resources:
         mem_mb = (lambda wildcards, attempt: attempt * 40960),
-        time_min = (lambda wildcards, attempt: attempt * 720)
+        time_min = (lambda wildcards, attempt: attempt * 1440)
     params:
         path_fa_ref = os.path.dirname(config["references"]["genome"])
     shell:
