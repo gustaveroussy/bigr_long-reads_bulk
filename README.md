@@ -94,17 +94,46 @@ steps:
 `differential_methylation_sample:` DMR analysis between every pair of samples extracted from the design file.
 `differential_methylation_condition:` DMR analysis between two conditions/groups extracted from the design file.
 
+- **spectre:** Using a blacklist file is recommanded by [Spectre documentation](https://github.com/fritzsedlazeck/Spectre?tab=readme-ov-file#blacklists) for long CNV calling, GRCh38 blacklist file provided by Spectre can be given to the config file as following:
+```
+spectre:
+  blacklist: "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/REFERENCES/Spectre/blacklist/grch38_renamed_blacklist_spectre.bed"
+```
+> [!WARNING]
+> - As we recommand using Ensembl references, the chromosomes in the given GRCh38 blacklist file are named "1", ..., "22", "X", "Y" and not "chr1", ..., "chr22", "chrX", "chrY". You can copy/paste this file and change chromosome names if needed by the reference file you have chosen.
+> - You can download your own blacklist on [UCSC table browser](https://genome.ucsc.edu/cgi-bin/hgTables) as explained below.
+
+<details>
+
+**<summary>How to get your own blacklist</summary>**
+
+>First go to the [UCSC table browser](https://genome.ucsc.edu/cgi-bin/hgTables). Select your organism information.
+>For mouse (GRCm38), choose:
+>- Clade: "Mammal" / Genome: "Mouse" / Assembly: "Dev. 2011 (GRCm38/mm10)
+>- Group: "Mapping and Sequencing" / Track: "All Gaps"
+>- Region: "Genome" / Output format: "BED - browser extensible data"
+>- Output filename: "mm10_all_gaps_ucsc.bed"
+>- File type returned "Plain text"
+
+>Then click on "Get output", uncheck "Include custom track header" and check Create one BED record per: "Whole Gene".
+>Finally, click on "get BED".
+
+>If you are using an Ensembl reference, do not forget to change chromosome names `sed 's/chr//g' mm10_all_gaps_ucsc.bed mm10_all_gaps_ucsc_renamed.bed`.
+
+>It's done! Give the absolute path to this bed file in the spectre blacklist field in the config file.
+</details>
+
 You can change various fields in the `config.yaml` file such as tools parameters _(example: you can select the specific filters you want to apply after SNV calling)_.
 
 #### :two: Design file
 It must be a comma separated file (.csv where comma is ",") and its path should be given in the `config.yaml` file. Field names are the following and depend on the analysis you wish to perform:
 - **sample_id _(required)_**: the sample name of you sample (it could be different that your fastq files).
 - **path_file _(required)_**: absolute path to the BAM file or to the POD5 directory.
-- **methyl_group _(optional)_**: name of the group/condition corresponding to the sample, it will be used only for DMR analysis. You can only use 2 groups/conditions at the moment, named `case` and `control`.
-- **somatic_ctrl _(optional)_**: sample id corresponding to the normal sample.
-- **cnv_cancer _(optional)_**: boolean to identify the sample as normal or cancer sample, for CNV analysis.
+- **methyl_group _(optional)_**: name of the group/condition corresponding to the sample, it will be used only for DMR analysis. You can only use 2 groups/conditions at the moment, named `case` and `control`. It is required only if you set `differential_methylation_condition` step as `true`. 
+- **somatic_ctrl _(optional)_**: sample id corresponding to the normal sample. It is required only if you set the `variant_calling_mode` as  `somatic`.
+- **cnv_cancer _(optional)_**: boolean to identify the sample as normal or cancer sample, for CNV analysis. It is required only if you set `cnv_calling` step as `true`.
 
-<ins>Example:</ins>
+<ins>Example with POD5 directory input and all columns given:</ins>
 ```
 sample_id,path_file,methyl_group,somatic_ctrl,cnv_cancer
 sample1_Tumor,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample1_Tumor/,case,sample1_Normal,TRUE
@@ -112,25 +141,26 @@ sample1_Normal,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_
 sample2_Tumor,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample2_Tumor/,case,sample2_Normal,TRUE
 sample2_Normal,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample2_Normal/,control,,FALSE
 ```
-
+Here, every step available in the config file can be executed and both variant analysis modes can be used.
 <details>
 
 **<summary>Other design files examples</summary>**
 
-
-POD5 directory as input, `differential_methylation_condition` step can not be performed without `methyl_group` column and `somatic` variant calling mode can not be used:
+<ins>POD5 directory as input and the only required columns:</ins>
 ```
 sample_id,path_file
-sample1_KO,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample1/pod5_dir/
-sample2_WT,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample2/pod5_dir/
+sample1_KO,/path/to/data_input/sample1/pod5_dir/
+sample2_WT,/path/to/data_input/sample2/pod5_dir/
 ```
+Here, every step available in the config file can be executed, except `differential_methylation_condition` step without `methyl_group` column and long CNV calling in `cnv_calling` step without `cnv_cancer` column. No `somatic` variant calling mode can be used without `somatic_ctrl` column.
 
-BAM file as input, every step can be executed, except the `somatic` variant calling mode without `somatic_ctrl` column:
+<ins>BAM file as input:</ins>
 ```
 sample_id,path_file,methyl_group
-sample1_KO,/path/to/input/file/sample1.bam,case
-sample2_WT,/path/to/input/file/sample2.bam,control
+sample1_KO,/path/to/data_input/sample1.bam,case
+sample2_WT,/path/to/data_input/sample2.bam,control
 ```
+Here, every step available in the config file can be executed, except long CNV calling in `cnv_calling` step without `cnv_cancer` column. No `somatic` variant calling mode can be used without `somatic_ctrl` column.
 </details>
 
 > [!NOTE]
