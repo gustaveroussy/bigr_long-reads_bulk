@@ -56,7 +56,7 @@ rule spectre_cnv:
         mem_mb = (lambda wildcards, attempt: attempt * 4096),
         time_min = (lambda wildcards, attempt: attempt * 60)
     params:
-        chromos_list = [x for x in CHR_NUMBER if x not in ["MT","M"]],
+        chromos_list = ",".join([x for x in CHR_NUMBER if x not in ["MT","M"]]),
         cancer = input_cancer
     conda:
         CONDA_ENV_SPECTRE
