@@ -21,7 +21,7 @@ rule modkit_separate_mod:
     input:
         bam = os.path.normpath(OUTPUT_DIR + "/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam")
     output:
-        bam = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam")
+        bam = temp(os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"))
     params:
         meth_to_ignore = ignore_meth
     threads: 12
@@ -41,7 +41,7 @@ rule bam_index:
     input:
         bam = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam")
     output:
-        index = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai")
+        index = temp(os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai"))
     threads: 1
     resources:
         mem_mb=lambda wildcards, attempt: min(1024 + 5120 * (attempt - 1 ),20480),
@@ -62,7 +62,7 @@ rule modkit_pileup_uncomb:
         bam = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"),
         index = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai")
     output:
-        uncomb_bed = os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed")
+        uncomb_bed = temp(os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed"))
     params:
         reference = config["references"]["genome"]
     log:
@@ -81,7 +81,7 @@ rule modkit_pileup_comb:
         bam = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"),
         index = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai")
     output:
-        comb_bed = os.path.normpath(OUTPUT_DIR + "/bed_combined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_comb.bed")
+        comb_bed = temp(os.path.normpath(OUTPUT_DIR + "/bed_combined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_comb.bed"))
     params:
         reference = config["references"]["genome"]
     log:

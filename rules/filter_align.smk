@@ -11,9 +11,9 @@ This rule launches ubam filtering
 
 rule ubam_filtering:
     input: 
-        bam = os.path.normpath(OUTPUT_DIR + "/calling/{sample_name}/{batch_name}.bam")
+        ubam = os.path.normpath(OUTPUT_DIR + "/calling/{sample_name}/{batch_name}.bam")
     output: 
-        temp(os.path.normpath(OUTPUT_DIR + "/filtered/{sample_name}/{batch_name}_filtered.bam"))
+        ubam = temp(os.path.normpath(OUTPUT_DIR + "/filtered/{sample_name}/{batch_name}_filtered.bam"))
     params:
         script = os.path.normpath(PIPELINE_DIR + "/script")
     threads: 1
@@ -24,7 +24,7 @@ rule ubam_filtering:
         CONDA_ENV_PYTHON
     shell:
         """
-        python3 {params.script}/filter_bam2.py {input.bam} {output}
+        python3 {params.script}/filter_bam2.py {input.ubam} {output.ubam}
         """
 
 """
@@ -32,9 +32,9 @@ This rule launches the alignment step
 """
 rule alignment:
     input:
-        bam = os.path.normpath(OUTPUT_DIR + "/filtered/{sample_name}/{batch_name}_filtered.bam")
+        ubam = os.path.normpath(OUTPUT_DIR + "/filtered/{sample_name}/{batch_name}_filtered.ubam")
     output:
-        temp(os.path.normpath(OUTPUT_DIR + "/alignment/{sample_name}/{batch_name}_aligned.bam"))
+        bam = temp(os.path.normpath(OUTPUT_DIR + "/alignment/{sample_name}/{batch_name}_aligned.bam"))
     params:
         reference = config["references"]["genome"]
     threads: 8
@@ -43,7 +43,7 @@ rule alignment:
         time_min = (lambda wildcards, attempt: attempt * 300)
     shell:
        	"""
-       	{TOOL_DORADO} aligner -t 8 --bandwidth 500,20000 --secondary=no {params.reference} {input.bam} > {output} 
+       	{TOOL_DORADO} aligner -t 8 --bandwidth 500,20000 --secondary=no {params.reference} {input.ubam} > {output.bam} 
        	"""
 
 

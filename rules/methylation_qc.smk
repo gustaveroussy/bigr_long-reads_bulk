@@ -65,7 +65,7 @@ This rule launch methylation QC barplot of methylated GC
 """
 
 def params_bed_comb_concat_formated_all_samples(wildcards):
-        return  ",".join(expand(os.path.normpath(OUTPUT_DIR + "/bed_combined_strands/{sample_name}/"+ wildcards.meth_type  + "/{sample_name}_" + wildcards.meth_type + "_comb.bed"), sample_name = SAMPLE_NAME))
+        return  ",".join(list(dict.fromkeys(expand(os.path.normpath(OUTPUT_DIR + "/bed_combined_strands/{sample_name}/"+ wildcards.meth_type  + "/{sample_name}_" + wildcards.meth_type + "_comb.bed"), sample_name = SAMPLE_NAME))))
 
 rule meth_QC_barplot_CG:
     input:

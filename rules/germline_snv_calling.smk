@@ -60,15 +60,15 @@ rule sambamba_markdup:
     output:
         markdup_bam = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/markdup/{sample_name}.bam")
     threads:
-        2
+        4
     resources:
         mem_mb = (lambda wildcards, attempt: attempt * 4096),
-        time_min = (lambda wildcards, attempt: attempt * 60)
+        time_min = (lambda wildcards, attempt: attempt * 720)
     conda:
         CONDA_ENV_SAMBAMBA
     shell:
         """
-        sambamba markdup -r {input.bam_file} {output.markdup_bam}
+        sambamba markdup -r -t {threads} {input.bam_file} {output.markdup_bam}
         """
 
 
