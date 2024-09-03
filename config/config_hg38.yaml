@@ -64,4 +64,4 @@ maftools:
 
 # CNV parameters
 spectre:
-  blacklist: ""
+  blacklist: "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/REFERENCES/Spectre/blacklists/grch38_renamed_blacklist_spectre.bed"
