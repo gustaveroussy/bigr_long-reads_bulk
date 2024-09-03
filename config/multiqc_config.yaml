@@ -10,9 +10,15 @@ module_order:
     - nanostat
     - qualimap
     - mosdepth
-    - custom_content:
-        name: "Methylation QC"
-        path_filters:
+    - custom_content
+
+custom_data:
+    Methylation_QC:
+        id: "Methylation_QC"
+        section_name: "Methylation QC"
+sp:
+    Methylation_QC:
+        fn:
             - "*barplot_methylated_CG_*_mqc.png"
             - "*per_pos_per_strand_gam_ratio_*_chr*_*_mqc.png"
   
@@ -24,7 +30,8 @@ fn_clean_exts:
     - "_sorted"
     - ".fastq.gz"
     - "_screen.txt"
-  
+    - ".png"
+
 software_versions:
     nanostat: "1.42.0"
     qualimap: "2.3"
