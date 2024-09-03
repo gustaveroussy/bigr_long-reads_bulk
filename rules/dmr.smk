@@ -177,7 +177,7 @@ rule DMR_stat_annot_graph_combination:
         ref_conversion_folder = os.path.dirname(config["references"]["code_symbol_conversion"])
     threads:1
     resources:
-        mem_mb=1024,
+        mem_mb = (lambda wildcards, attempt: attempt * 5120),
         time_min = (lambda wildcards, attempt: attempt * 300)
     shell:
         """
@@ -203,7 +203,7 @@ rule DMR_stat_annot_graph_condition:
         script = os.path.normpath(PIPELINE_DIR + "/script"),
         ref_conversion_folder = os.path.dirname(config["references"]["code_symbol_conversion"])
     resources:
-        mem_mb=1024,
+        mem_mb = (lambda wildcards, attempt: attempt * 5120),
         time_min = (lambda wildcards, attempt: attempt * 300)
     shell:
         """
