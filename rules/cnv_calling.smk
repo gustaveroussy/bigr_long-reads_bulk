@@ -46,7 +46,7 @@ rule spectre_cnv:
         regions = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/mosdepth/{sample_name}/{sample_name}_Q20.regions.bed.gz"),
         fa_ref = config["references"]["genome"]
     output:
-        vcf_file = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}.vcf"),
+        vcf_file = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}.vcf.gz"),
         bed_file = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}_cnv.bed.gz"),
         bed_tbi = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}_cnv.bed.gz.tbi"),
         img = expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{{sample_name}}/img/{{sample_name}}_plot_cnv_chr_{chromos}.png"), chromos = [x for x in CHR_NUMBER if x not in ["MT","M"]])
