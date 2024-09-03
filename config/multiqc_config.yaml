@@ -1,5 +1,4 @@
-title: "BiGR Long-Reads Bulk DNA pipeline Report"
-intro_text: "This report summarises the quality control of the analysis."
+intro_text: "This report summarises the quality control of the analysis by the BiGR Long-Reads Bulk DNA pipeline."
 report_header_info:
     - Contact E-mail: "bigr@gustaveroussy.fr"
     - Application Type: "Nanopore Long reads DNA-seq"
