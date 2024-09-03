@@ -73,7 +73,7 @@ rule spectre_cnv:
         for file in *.png
         do
         new_name=$(echo ${{file}} | sed 's/plot_cnv/plot_cnv_chr/')
-        mv ${{file}} $[[new_name}}
+        mv ${{file}} ${{new_name}}
         done
         
         """
