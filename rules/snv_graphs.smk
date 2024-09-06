@@ -40,10 +40,7 @@ rule maftools_graphs:
     input:
         maf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.maf")
     output:
-        summary_plot = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_mafSummary_plot.pdf"),
-        barplot = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_mafbarplot.pdf"),
-        oncoplot = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_oncoplot.pdf"),
-        titv = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_titv_Transitions_Transversions.pdf")
+        flag_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_maftools_graphs_DONE.txt")
     threads:
         1
     resources:
@@ -56,5 +53,5 @@ rule maftools_graphs:
         variantType = config["variant_calling_mode"]
     shell:
         """
-        Rscript {PIPELINE_DIR}/script/maftools_graphs.R --sampleName {wildcards.sample_name}{wildcards.compl}" + {SNPEFF_SUFFIX} + {DBNSFP_SUFFIX} + CLINVAR_SUFFIX + "_{wildcards.filter} --inputMAF {input.maf_file} --outputDir {OUTPUT_DIR}/SNV_Calling/{wildcards.variant_calling_mode}/{wildcards.path_calling_tool_params}/{wildcards.sample_name}/maftools/ --genesFile {params.genes_file} --variant_type {params.variantType}
+        Rscript {PIPELINE_DIR}/script/maftools_graphs.R --sampleName {wildcards.sample_name}{wildcards.compl}{SNPEFF_SUFFIX}{DBNSFP_SUFFIX}{CLINVAR_SUFFIX}_{wildcards.filter} --inputMAF {input.maf_file} --outputDir {OUTPUT_DIR}/SNV_Calling/{wildcards.variant_calling_mode}/{wildcards.path_calling_tool_params}/{wildcards.sample_name}/maftools/ --genesFile {params.genes_file} --variant_type {params.variantType}
         """

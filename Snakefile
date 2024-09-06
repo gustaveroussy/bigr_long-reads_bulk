@@ -201,12 +201,20 @@ if 'variant_calling_mode' in config:
         ]
         SNPSIFT_FILTERS_NAMES = [
             filter.replace("'", "")
+            .replace("!( ANN[0].EFFECT has", "no_")
+            .replace("!( ANN[*].EFFECT has", "no_")
+            .replace("[*]", ".all")
+            .replace("[0]", ".index0")
+            .replace("has", "")
             .replace("(", "")
             .replace(")", "")
             .replace(" ", "")
             .replace(">", "sup")
             .replace("<", "inf")
             .replace("=", "eq")
+            .replace("&", "_and_")
+            .replace("!", "not")
+            .replace("|", "_or_")
             for filter in FILTERS
         ]  # to do: find a way to keep "()" if therer are more than 2 parentheses. Ex: "((QUAL >= 10) && (QUAL <= 30)) || (FILTER = 'PASS')"
         if 'maftools' in config and 'genes_of_interest' in config['maftools']:
@@ -255,9 +263,9 @@ if config["steps"]["cnv_calling"]:
     EXTRA_PARAMS_SPECTRE = ""
     if "spectre" in config:
         if "blacklist" in config["spectre"] and config["spectre"]["blacklist"] != "":
-                if os.path.exists(config["spectre"]["blacklist"]):
-                    EXTRA_PARAMS_SPECTRE = EXTRA_PARAMS_SPECTRE + "--blacklist " + config["spectre"]["blacklist"]
-                else: sys.exit("Error: 'blacklist' file not found. Check your configuration file.")
+            if os.path.exists(config["spectre"]["blacklist"]):
+                EXTRA_PARAMS_SPECTRE = "--blacklist " + config["spectre"]["blacklist"]
+            else: sys.exit("Error: 'blacklist' file not found. Check your configuration file.")
 
 sys.stderr.write("Parameters validated.\n")
 
