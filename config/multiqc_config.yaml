@@ -16,12 +16,19 @@ custom_data:
     Methylation_QC:
         id: "Methylation_QC"
         section_name: "Methylation QC"
+    Methylation_QC2:
+        id: "Methylation_QC2"
+        section_name: "Methylation QC 2"
 sp:
     Methylation_QC:
-        fn:
-            - "*barplot_methylated_CG_*_mqc.png"
-            - "*per_pos_per_strand_gam_ratio_*_chr*_*_mqc.png"
-  
+        fn: "*barplot_methylated_CG_*_mqc.png"
+    Methylation_QC2:
+        fn: "*per_pos_per_strand_gam_ratio_*_chr*_*_mqc.png"
+custom_content:
+    order:
+        - Methylation_QC
+        - Methylation_QC2
+
 custom_logo: "/mnt/beegfs/pipelines/bigr_long-reads_bulk/2.0.0/images/bigr_ContourBlanc_96dpi_100x100.png"
 custom_logo_title: "Bioinformatics Core Facility - Gustave Roussy"
 
@@ -30,7 +37,7 @@ fn_clean_exts:
     - "_sorted"
     - ".fastq.gz"
     - "_screen.txt"
-    - ".png"
+    - "_mqc.png"
 
 software_versions:
     nanostat: "1.42.0"

@@ -83,6 +83,6 @@ rule multiqc:
     shell:
         """
         cd {OUTPUT_DIR}/Quality_Control/
-        multiqc {OUTPUT_DIR}/Quality_Control/bam_QC/qualimap/ {OUTPUT_DIR}/Quality_Control/bam_QC/mosdepth/ {OUTPUT_DIR}/Quality_Control/bam_QC/nanoplot/ {OUTPUT_DIR}/Quality_Control/fastq_QC/fastqc/ {OUTPUT_DIR}/Quality_Control/fastq_QC/fastq_screen/  --config {PIPELINE_DIR}/config/multiqc_config.yaml
+        multiqc {OUTPUT_DIR}/Quality_Control/bam_QC/qualimap/ {OUTPUT_DIR}/Quality_Control/bam_QC/mosdepth/ {OUTPUT_DIR}/Quality_Control/bam_QC/nanoplot/ {OUTPUT_DIR}/Quality_Control/fastq_QC/fastqc/ {OUTPUT_DIR}/Quality_Control/fastq_QC/fastq_screen/ {OUTPUT_DIR}/Quality_Control/methylation_QC/ --config {PIPELINE_DIR}/config/multiqc_config.yaml
         
         """
