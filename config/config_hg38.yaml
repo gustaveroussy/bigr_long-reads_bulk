@@ -42,13 +42,13 @@ Transcript: "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/REFERENCES/DMR/GR
 
 # Basecalling parameters
 dorado_basecaller:
-  model: "/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0"
-  model_meth: "/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0_5mCG_5hmCG@v2"
+  model: "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0" # Dorado basecaller model v5.0.0 SUP for R10
+  model_meth: "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0_5mCG_5hmCG@v1"
   meth_type: ["5mCG","5hmCG"] #mandatory if basecalling is set to false.
 
 # Germline SNV calling parameters
 clair3:
-  model: ["/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/rerio/clair3_models/r1041_e82_400bps_sup_v430"] # R10 model from Rerio for Dorado SUP
+  model: ["/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/rerio/clair3_models/r1041_e82_400bps_sup_v500"] # Rerio Clair3 model for data obtained using Dorado basecaller model v5.0.0 SUP for R10
 
 # Somatic SNV parameters
 clairs:

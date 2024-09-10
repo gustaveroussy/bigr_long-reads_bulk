@@ -182,7 +182,7 @@ if 'variant_calling_mode' in config:
             if 'clair3' in config and 'model' in config['clair3']:
                 CLAIR3_MODEL = config["clair3"]["model"]
             else:
-                CLAIR3_MODEL = ["/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/rerio/clair3_models/r1041_e82_400bps_sup_v430"]
+                CLAIR3_MODEL = ["/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/rerio/clair3_models/r1041_e82_400bps_sup_v500"]
             NAME_CLAIR3_MODEL = [os.path.basename(model) for model in CLAIR3_MODEL]
         # somatic
         elif config['variant_calling_mode'] == "somatic":
