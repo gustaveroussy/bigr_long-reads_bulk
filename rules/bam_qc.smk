@@ -10,7 +10,8 @@ This rule makes the qualimap QC
 
 rule qualimap:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        index = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam.bai")
     output:
         os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/qualimap/{sample_name}/qualimapReport.html"),
         os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/qualimap/{sample_name}/raw_data_qualimapReport/genome_fraction_coverage.txt"),
@@ -39,7 +40,8 @@ This rule makes the mosdepth QC
 
 rule mosdepth:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        index = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam.bai")
     output:
         os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/mosdepth/{sample_name}/{sample_name}_wgs_mode.mosdepth.global.dist.txt"),
         os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/mosdepth/{sample_name}/{sample_name}_wgs_mode.mosdepth.region.dist.txt"),
@@ -68,7 +70,8 @@ This rule makes the nanoplot QC
 
 rule nanoplot_bam:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        index = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam.bai")
     output:
         os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/nanoplot/{sample_name}/{sample_name}_AlignedReadlengthvsSequencedReadLength_dot.html"),
         os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/nanoplot/{sample_name}/{sample_name}_AlignedReadlengthvsSequencedReadLength_dot.png"),
@@ -122,3 +125,88 @@ rule nanoplot_bam:
         """
 
 
+"""
+These rules make various samtools stats files: stats, flagstat, idxstats and coverage
+"""
+
+rule samtools_stats:
+    input:
+        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+    output:
+        os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_stats.txt")
+    threads:
+        2
+    resources:
+        mem_mb = (lambda wildcards, attempt: attempt * 4096),
+        time_min = (lambda wildcards, attempt: attempt * 60)
+    conda:
+        CONDA_ENV_SAMTOOLS
+    shell:
+        """
+        samtools stats --threads {threads} {input.bam_file} > {output}
+        """
+
+rule samtools_flagstat:
+    input:
+        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+    output:
+        os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_flagstat.txt")
+    threads:
+        2
+    resources:
+        mem_mb = (lambda wildcards, attempt: attempt * 4096),
+        time_min = (lambda wildcards, attempt: attempt * 60)
+    conda:
+        CONDA_ENV_SAMTOOLS
+    shell:
+        """
+        samtools flagstat --threads {threads} {input.bam_file} > {output}
+        """
+
+rule samtools_idxstats:
+    input:
+        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        index_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam.bai")
+    output:
+        os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_idxstats.txt")
+    threads:
+        2
+    resources:
+        mem_mb = (lambda wildcards, attempt: attempt * 1024),
+        time_min = (lambda wildcards, attempt: attempt * 60)
+    conda:
+        CONDA_ENV_SAMTOOLS
+    shell:
+        """
+        samtools idxstats {input.bam_file} > {output}
+        """
+        
+rule samtools_coverage:
+    input:
+        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+    output:
+        all_chr_coverage = temp(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_all_chr_coverage.txt")),
+        coverage = os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_coverage.txt")
+    threads:
+        1
+    resources:
+        mem_mb = (lambda wildcards, attempt: attempt * 4096),
+        time_min = (lambda wildcards, attempt: attempt * 60)
+    conda:
+        CONDA_ENV_SAMTOOLS
+    shell:
+        """
+        samtools coverage --output {output.all_chr_coverage} {input.bam_file}
+        
+        #Get only chromosomes of interest
+        while IFS= read -r line; do chr_input=$(echo $line | awk '{{print $1}}'); for chr in {CHR_NUMBER}; do if [ $chr = $chr_input ]; then echo $line >> {output.coverage}; fi; done; done < {output.all_chr_coverage}
+
+        #Sort chr numerically, with alphabetical chr names (X, Y...) at the end
+        sort -k1,1V {output.coverage}
+
+        #Insert header
+        sed -i '1i #rname\tstartpos\tendpos\tnumreads\tcovbases\tcoverage\tmeandepth\tmeanbaseq\tmeanmapq' {output.coverage}
+
+        #replace " " separator introduced by previous operations by \t        
+        sed -i 's, ,\t,g' {output.coverage}
+        """

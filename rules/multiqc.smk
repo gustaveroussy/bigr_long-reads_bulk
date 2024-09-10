@@ -63,6 +63,11 @@ rule multiqc:
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/nanoplot/{sample_name}/{sample_name}_WeightedLogTransformed_HistogramReadlength.png"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/nanoplot/{sample_name}/{sample_name}_Yield_By_Length.html"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/nanoplot/{sample_name}/{sample_name}_Yield_By_Length.png"), sample_name=SAMPLE_NAME),
+        #samtools stats, flagstat, idxstats, coverage
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_stats.txt"), sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_flagstat.txt"), sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_idxstats.txt"), sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_coverage.txt"), sample_name=SAMPLE_NAME),
         #fastqc
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/fastq_QC/fastqc/{sample_name}/{sample_name}_fastqc.zip"), sample_name=SAMPLE_NAME),
         #fastq_screen
@@ -83,6 +88,6 @@ rule multiqc:
     shell:
         """
         cd {OUTPUT_DIR}/Quality_Control/
-        multiqc {OUTPUT_DIR}/Quality_Control/bam_QC/qualimap/ {OUTPUT_DIR}/Quality_Control/bam_QC/mosdepth/ {OUTPUT_DIR}/Quality_Control/bam_QC/nanoplot/ {OUTPUT_DIR}/Quality_Control/fastq_QC/fastqc/ {OUTPUT_DIR}/Quality_Control/fastq_QC/fastq_screen/ {OUTPUT_DIR}/Quality_Control/methylation_QC/ --config {PIPELINE_DIR}/config/multiqc_config.yaml
+        multiqc {OUTPUT_DIR}/Quality_Control/bam_QC/qualimap/ {OUTPUT_DIR}/Quality_Control/bam_QC/mosdepth/ {OUTPUT_DIR}/Quality_Control/bam_QC/nanoplot/ {OUTPUT_DIR}/Quality_Control/bam_QC/samtools/ {OUTPUT_DIR}/Quality_Control/fastq_QC/fastqc/ {OUTPUT_DIR}/Quality_Control/fastq_QC/fastq_screen/ {OUTPUT_DIR}/Quality_Control/methylation_QC/ --config {PIPELINE_DIR}/config/multiqc_config.yaml
         
         """
