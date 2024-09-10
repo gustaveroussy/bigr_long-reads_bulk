@@ -133,7 +133,7 @@ if config["steps"]["alignment"] or config["input_format"] == "bam" :
     # methylation
     if config['basecalling_mode'] == "methylation":
         # environments
-        SING_ENV_GENEDMR = "/mnt/beegfs/pipelines/bigr_long-reads_bulk/dev_test/envs/singularity/GeneDMR.simg"
+        SING_ENV_GENEDMR = PIPELINE_DIR +  "/envs/singularity/GeneDMR.simg"
         #TOOL_MODKIT = "/mnt/beegfs/pipelines/dorado/tools/modkit_v0.2.6/dist/modkit"
         SING_ENV_MODKIT = PIPELINE_DIR + "/envs/singularity/modkit_0.3.2.simg"
         # parameters
@@ -151,7 +151,7 @@ if config["steps"]["alignment"] or config["input_format"] == "bam" :
 if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"]:
 
     # environments
-    SING_ENV_GENEDMR = "/mnt/beegfs/pipelines/bigr_long-reads_bulk/dev_test/envs/singularity/GeneDMR.simg"
+    SING_ENV_GENEDMR = PIPELINE_DIR +  "/envs/singularity/GeneDMR.simg"
     CONDA_ENV_SAMTOOLS = PIPELINE_DIR + "/envs/conda/samtools_1.11.yaml"
     
     # parameters
