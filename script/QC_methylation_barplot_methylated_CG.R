@@ -8,24 +8,24 @@ library(ggplot2)
 ### Parameters
 ## parameters list
 option_list <- list(
-  make_option("--list_input_bed_comb_concat", help="List of input bed file combined for chrosome and strand, for all samples separated by comma."),
+  make_option("--list_input_bed_uncomb_concat", help="List of input bed file uncombined for chrosome and strand, for all samples separated by comma."),
   make_option("--input_bed_motif_cg", help="Input bed file with all CG motifs."),
   make_option("--output_path", help="Output graphic folder."))
 parser <- OptionParser(usage="Rscript %prog [options]", description = " ", option_list = option_list)
 args <- parse_args(parser, positional_arguments = 0)
 ## get parameters
-list_input_bed_comb_concat <- args$options$list_input_bed_comb_concat
+list_input_bed_uncomb_concat <- args$options$list_input_bed_uncomb_concat
 input_bed_motif_cg <- args$options$input_bed_motif_cg
 output_path <- args$options$output_path
 ## check parameters
-if(is.null(list_input_bed_comb_concat)) stop("--list_input_bed_comb_concat parameter must be set!")
+if(is.null(list_input_bed_uncomb_concat)) stop("--list_input_bed_uncomb_concat parameter must be set!")
 if(is.null(input_bed_motif_cg)) stop("--input_bed_motif_cg parameter must be set!")
 if(is.null(output_path)) stop("--output_path parameter must be set!")
 
 ### Set and create output path, set file_list and methylation type
 path <- output_path
 dir.create(path, showWarnings = FALSE, recursive = TRUE)
-file_list <- unlist(stringr::str_split(list_input_bed_comb_concat, ","))
+file_list <- unlist(stringr::str_split(list_input_bed_uncomb_concat, ","))
 meth_type <- basename(dirname(file_list[1]))
 
 ### Load and format GC reference
@@ -70,9 +70,9 @@ for (f in file_list){
     colnames(concat_meth) <- c("total_cg","meth_cg","total_cg_10x","meth_cg_10x","total_cg_20x","meth_cg_20x")
 }
 
-concat$sample <- gsub(basename(file_list), pattern = paste0("_", meth_type, "_comb.bed"), replacement="")
-concat_pct$sample <- gsub(basename(file_list), pattern = paste0("_", meth_type, "_comb.bed"), replacement="")
-concat_meth$sample <- gsub(basename(file_list), pattern = paste0("_", meth_type, "_comb.bed"), replacement="")
+concat$sample <- gsub(basename(file_list), pattern = paste0("_", meth_type, "_uncomb.bed"), replacement="")
+concat_pct$sample <- gsub(basename(file_list), pattern = paste0("_", meth_type, "_uncomb.bed"), replacement="")
+concat_meth$sample <- gsub(basename(file_list), pattern = paste0("_", meth_type, "_uncomb.bed"), replacement="")
 
 print(concat)
 print(concat_pct)

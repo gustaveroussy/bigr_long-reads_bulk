@@ -90,6 +90,11 @@ def get_targets():
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/nanoplot/{sample_name}/{sample_name}_WeightedLogTransformed_HistogramReadlength.png"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/nanoplot/{sample_name}/{sample_name}_Yield_By_Length.html"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/nanoplot/{sample_name}/{sample_name}_Yield_By_Length.png"), sample_name=SAMPLE_NAME),
+        #samtools stats, flagstat, idxstats, coverage
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_stats.txt"), sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_flagstat.txt"), sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_idxstats.txt"), sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_coverage.txt"), sample_name=SAMPLE_NAME),
       ]
       targets["fastq_qc"]=[
         #bam_to_fastq
