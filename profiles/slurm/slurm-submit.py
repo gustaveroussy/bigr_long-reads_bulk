@@ -142,7 +142,7 @@ for k, v in arg_dict.items():
 if arg_dict["wrap"] is not None:
     cmd = "sbatch {opts}".format(opts=opts)
 else:
-    cmd = "sbatch {opts} --exclude=n04 {extras}".format(opts=opts, extras=extras)
+    cmd = "sbatch {opts} --exclude=n04,n06 {extras}".format(opts=opts, extras=extras)
 
 try:
     res = subprocess.run(cmd, check=True, shell=True, stdout=subprocess.PIPE)
