@@ -41,11 +41,11 @@ It is localised at `/mnt/beegfs/pipelines/bigr_long-reads_bulk/<VERSION>`. You c
 #### :one: Download pipeline
 ```
 cd /path_to_pipeline_installation_dir/
-VERSION="2.0.0"
+VERSION="2.0.1"
 git clone https://github.com/gustaveroussy/bigr_long-reads_bulk.git ${VERSION}
 ```
 #### :two: Download Singularity images
-Download all singularity images from [Zenodo](https://zenodo.org/records/13619512) in the directory `/path_to_pipeline_installation_dir/${VERSION}/envs/singularity/` of the cloned repository.
+Download all singularity images from [Zenodo](https://zenodo.org/records/13742749) in the directory `/path_to_pipeline_installation_dir/${VERSION}/envs/singularity/` of the cloned repository.
 #### :three: Install Snakemake environment
 ```
 source /mnt/beegfs/software/miniconda/24.3.0/etc/profile.d/conda.sh
