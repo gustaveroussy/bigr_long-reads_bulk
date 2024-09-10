@@ -54,7 +54,7 @@ p1 <- ggplot2::ggplot(bed_file, ggplot2::aes(x = position, y = Nreads, color = S
         ggplot2::geom_point() + 
         ggplot2::theme_classic() +
         ggplot2::scale_color_manual(values=c("#2596be","#e12f8c")) +
-        ggplot2::theme(text = element_text(size=17)) +
+        ggplot2::theme(text = ggplot2::element_text(size=17)) +
         ggplot2::ylab("Number of reads") + 
         ggplot2::xlab(paste0("Position on the chromosome ", chr_number)) +
         ggplot2::ggtitle(paste0("Number of reads along chromosome ", chr_number))
@@ -64,22 +64,20 @@ p2 <- ggplot2::ggplot(bed_file, ggplot2::aes(x = position, y = Nreads, color = S
         ggplot2::geom_smooth(span = 0.2) +
         ggplot2::theme_classic() +
         ggplot2::scale_color_manual(values=c("#2596be","#e12f8c")) +
-        ggplot2::theme(text = element_text(size=17)) +
+        ggplot2::theme(text = ggplot2::element_text(size=17)) +
         ggplot2::ylab("Smoothed number of reads") + 
         ggplot2::xlab(paste0("Position on the chromosome ", chr_number)) +
         ggplot2::ggtitle(paste0("Number of reads along chromosome ", chr_number," (smoothed version)"))
 
-### Map number ratio between forward and reverse
 print("Graphique ratio forward vs reverse")
 p3 <- ggplot2::ggplot(pos_and_neg, ggplot2::aes(x = position, y = ratio)) + 
         ggplot2::geom_smooth(span = 0.2, color = "#7475b4") + 
-        geom_hline(yintercept = 1, linetype = "dashed", color = "#7475b4", size=2) +
         ggplot2::theme_classic() +
-        ggplot2::theme(text = element_text(size=17)) +
+        ggplot2::theme(text = ggplot2::element_text(size=17)) +
         ggplot2::ylab("Ratio (number reads forward / number reads reverse)") + 
         ggplot2::xlab(paste0("Position on the chromosome ", chr_number)) +
         ggplot2::ggtitle(paste0("Ratio of the number of reads forward/reverse along chromosome ", chr_number))
-
+        #geom_hline(yintercept = 1, linetype = "dashed", color = "#7475b4", size=2) +
 
 png(paste0(path, "/per_pos_per_strand_gam_ratio_", input_name, "_mqc.png"), width = 2000, height = 1800)
 print(p1 / p2 / p3)
