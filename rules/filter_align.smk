@@ -32,18 +32,21 @@ This rule launches the alignment step
 """
 rule alignment:
     input:
-        ubam = os.path.normpath(OUTPUT_DIR + "/filtered/{sample_name}/{batch_name}_filtered.ubam")
+        ubam = os.path.normpath(OUTPUT_DIR + "/filtered/{sample_name}/{batch_name}_filtered.bam")
     output:
         bam = temp(os.path.normpath(OUTPUT_DIR + "/alignment/{sample_name}/{batch_name}_aligned.bam"))
     params:
-        reference = config["references"]["genome"]
+        reference = config["references"]["genome"],
+        ref_path = os.path.normpath(config["references"]["genome"])
     threads: 8
     resources:
         mem_mb=lambda wildcards, attempt: min(25600 + 5120 * (attempt - 1),35840),
         time_min = (lambda wildcards, attempt: attempt * 300)
     shell:
        	"""
-       	{TOOL_DORADO} aligner -t 8 --bandwidth 500,20000 --secondary=no {params.reference} {input.ubam} > {output.bam} 
+       	TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
+        singularity exec --contain -B {OUTPUT_DIR},{params.ref_path} -B ${{TMP_DIR}}:/tmp \
+        {SING_ENV_DORADO} dorado aligner -t 8 --bandwidth 500,20000 --secondary=no {params.reference} {input.ubam} > {output.bam} 
        	"""
 
 
@@ -68,7 +71,6 @@ rule concat_bam:
         CONDA_ENV_SAMTOOLS
     shell:
         """
-        module load samtools/1.11
        	samtools cat {input.bams} > {output}
         """
 

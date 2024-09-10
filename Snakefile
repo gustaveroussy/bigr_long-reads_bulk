@@ -79,7 +79,8 @@ if config["basecalling_mode"] == "basic":
 if config["steps"]["basecalling"]:
 
     # environments
-    TOOL_DORADO = "/mnt/beegfs/pipelines/dorado/0.5.3/dorado-0.5.3-linux-x64/bin/dorado"
+    #TOOL_DORADO = "/mnt/beegfs/pipelines/dorado/0.5.3/dorado-0.5.3-linux-x64/bin/dorado"
+    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.7.3.simg"
     
     # parameters
     if 'basecalling_mode' in config:
@@ -87,16 +88,19 @@ if config["steps"]["basecalling"]:
             if 'dorado_basecaller' in config and 'model' in config['dorado_basecaller']:
                 DORADO_MODEL = [config['dorado_basecaller']['model'], ""]
             else:
-                DORADO_MODEL = ["/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0", ""]
+                #DORADO_MODEL = ["/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0", ""]
+                DORADO_MODEL = ["/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0", ""]
         elif config['basecalling_mode'] == "methylation":
             if 'dorado_basecaller' in config and 'model' in config['dorado_basecaller']:
                 MODE_BASIC = config['dorado_basecaller']['model']
             else:
-                MODE_BASIC = "/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0"
+                #MODE_BASIC = "/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0"
+                MODE_BASIC = "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0"
             if 'dorado_basecaller' in config and 'model_meth' in config['dorado_basecaller']:
                 MODEL_METH = config['dorado_basecaller']['model_meth']
             else:
-                MODEL_METH = "/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0_5mCG_5hmCG@v2"
+                #MODEL_METH = "/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0_5mCG_5hmCG@v2"
+                MODEL_METH = "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0_5mCG_5hmCG@v1"
             DORADO_MODEL = [MODE_BASIC,MODEL_METH]
         else: sys.exit("Error: 'basecalling_mode' unknown. Check your configuration file.")
     else: sys.exit("Error: 'basecalling_mode' have to be set. Check your configuration file.")
@@ -106,7 +110,8 @@ if config["steps"]["basecalling"]:
 if config["steps"]["alignment"]:
 
     # environments
-    TOOL_DORADO = "/mnt/beegfs/pipelines/dorado/0.5.3/dorado-0.5.3-linux-x64/bin/dorado"
+    #TOOL_DORADO = "/mnt/beegfs/pipelines/dorado/0.5.3/dorado-0.5.3-linux-x64/bin/dorado"
+    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.7.3.simg"
 
     # parameters
     # to do: check reference
@@ -123,13 +128,14 @@ if config["steps"]["alignment"] or config["input_format"] == "bam" :
     SING_ENV_NANOPLOT = PIPELINE_DIR + "/envs/singularity/nanoplot_1.42.0.simg"
     SING_ENV_FASTQ_SCREEN = PIPELINE_DIR + "/envs/singularity/fastq_screen_v0.15.3_minimap2.simg"
     SING_ENV_FASTQC = PIPELINE_DIR + "/envs/singularity/fastqc_1.20.simg"
-    CONDA_ENV_MULTIQC = PIPELINE_DIR + "/envs/conda/multiqc.yaml"
+    CONDA_ENV_MULTIQC = PIPELINE_DIR + "/envs/conda/multiqc_1.24.1.yaml"
 
     # methylation
     if config['basecalling_mode'] == "methylation":
         # environments
         SING_ENV_GENEDMR = "/mnt/beegfs/pipelines/bigr_long-reads_bulk/dev_test/envs/singularity/GeneDMR.simg"
-        TOOL_MODKIT = "/mnt/beegfs/pipelines/dorado/tools/modkit_v0.2.6/dist/modkit"
+        #TOOL_MODKIT = "/mnt/beegfs/pipelines/dorado/tools/modkit_v0.2.6/dist/modkit"
+        SING_ENV_MODKIT = PIPELINE_DIR + "/envs/singularity/modkit_0.3.2.simg"
         # parameters
         def list_meth_type(list_of_model):
         	type_meth=[ re.split("@v[0-9\.]+",x)[-2].split("_")[1:] for x in list_of_model[1:]]
@@ -366,10 +372,13 @@ if config["steps"]["basecalling"]:
         sys.stderr.write("Input format is POD5 files.\n")
         SAMPLE_NAME = []
         BATCH_NAME = []
+        INPUT_PATHS = set()
         for line in range(0, len(design["path_file"]), 1):
             BATCH_FOLDER = split_pod5_size(design["path_file"].iloc[line],OUTPUT_DIR,design["sample_id"].iloc[line],20000000000)
             SAMPLE_NAME = SAMPLE_NAME + ([design["sample_id"].iloc[line]] * len(BATCH_FOLDER))
+            INPUT_PATHS.add(design["path_file"].iloc[line])
             BATCH_NAME = BATCH_NAME + BATCH_FOLDER
+        INPUT_PATHS = list(INPUT_PATHS)
         #sys.stderr.write("BATCH_NAME:\n")
         #sys.stderr.write(', '.join(BATCH_NAME) + "\n")
         #sys.stderr.write("SAMPLE_NAME:\n")
@@ -380,6 +389,10 @@ if config["steps"]["basecalling"]:
 if config["steps"]["alignment"]:
     if config["input_format"] == "ubam":
         sys.stderr.write("Input format is UBAM file.\n")
+        #INPUT_PATHS = set()
+        #for line in range(0, len(design["path_file"]), 1):
+        #   INPUT_PATHS.add(os.path.dirname(design["path_file"].iloc[line]))
+        #INPUT_PATHS = list(INPUT_PATHS)
     # to to
     elif config["input_format"] == "bam": sys.exit("To make 'alignment', 'input_format' have to be 'pod5' or 'ubam'. Check your design file")
 

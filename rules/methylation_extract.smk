@@ -31,7 +31,9 @@ rule modkit_separate_mod:
     shell:
         """
         echo {wildcards.meth_type}
-        {TOOL_MODKIT} adjust-mods -t 12 --ignore {params.meth_to_ignore} {input.bam} {output.bam}
+        TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
+        singularity exec --contain -B {OUTPUT_DIR} -B ${{TMP_DIR}}:/tmp \
+        {SING_ENV_MODKIT} modkit adjust-mods -t 12 --ignore {params.meth_to_ignore} {input.bam} {output.bam}
         """
 
 """
@@ -64,7 +66,8 @@ rule modkit_pileup_uncomb:
     output:
         uncomb_bed = temp(os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed"))
     params:
-        reference = config["references"]["genome"]
+        reference = config["references"]["genome"],
+        ref_path = os.path.normpath(config["references"]["genome"])
     log:
         os.path.normpath(OUTPUT_DIR + "/logs/modkit_pileup/{sample_name}_chr{chr_number}_{meth_type}_uncombined.log")
     threads: 12
@@ -73,7 +76,9 @@ rule modkit_pileup_uncomb:
         time_min = (lambda wildcards, attempt: attempt * 300)
     shell:
         """
-        {TOOL_MODKIT} pileup --ref {params.reference} --cpg --threads {threads} --log-filepath {log} {input.bam} {output.uncomb_bed}
+        TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
+        singularity exec --contain -B {OUTPUT_DIR},{params.ref_path} -B ${{TMP_DIR}}:/tmp \
+        {SING_ENV_MODKIT} modkit pileup --ref {params.reference} --cpg --threads {threads} --log-filepath {log} {input.bam} {output.uncomb_bed}
         """
 
 rule modkit_pileup_comb:
@@ -83,7 +88,8 @@ rule modkit_pileup_comb:
     output:
         comb_bed = temp(os.path.normpath(OUTPUT_DIR + "/bed_combined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_comb.bed"))
     params:
-        reference = config["references"]["genome"]
+        reference = config["references"]["genome"],
+        ref_path = os.path.normpath(config["references"]["genome"])
     log:
         os.path.normpath(OUTPUT_DIR + "/logs/modkit_pileup/{sample_name}_chr_{chr_number}_{meth_type}_combined.log")
     threads: 12
@@ -92,7 +98,9 @@ rule modkit_pileup_comb:
         time_min = (lambda wildcards, attempt: attempt * 300)
     shell:
         """
-        {TOOL_MODKIT} pileup --ref {params.reference} --cpg --threads {threads}  --combine-strands --log-filepath {log} {input.bam} {output.comb_bed}
+        TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
+        singularity exec --contain -B {OUTPUT_DIR},{params.ref_path} -B ${{TMP_DIR}}:/tmp \
+        {SING_ENV_MODKIT} modkit pileup --ref {params.reference} --cpg --threads {threads}  --combine-strands --log-filepath {log} {input.bam} {output.comb_bed}
         
         """
 

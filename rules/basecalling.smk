@@ -15,7 +15,9 @@ rule dorado_basecalling:
         os.path.normpath(OUTPUT_DIR + "/calling/{samples_name}/{batch_name}.bam")
     params:
         basic_model = DORADO_MODEL[0],
-        math_model = DORADO_MODEL[1]
+        math_model = DORADO_MODEL[1],
+        model_path = os.path.dirname(DORADO_MODEL[0]),
+        input_paths = ",".join(INPUT_PATHS)
     threads: 2
     resources:
         mem_mb=30720,
@@ -30,12 +32,10 @@ rule dorado_basecalling:
 
         if [ ! -z {params.math_model} ]; then echo "Methylation model provided ..."; meth="--modified-bases-models {params.math_model}"; else meth=""; fi
         echo -e "Launching dorado...\n"
-        {TOOL_DORADO} basecaller {params.basic_model} {input.pod5_folder} $meth -x cuda:0 --emit-moves --no-trim -b 1728 > {output}
+        
+        TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
+        singularity exec --contain --nv -B {OUTPUT_DIR},{params.model_path},{params.input_paths} -B ${{TMP_DIR}}:/tmp \
+        {SING_ENV_DORADO} dorado basecaller {params.basic_model} {input.pod5_folder} $meth -x cuda:0 --emit-moves --no-trim -b 1728 > {output}
+        
         echo "Finished"
         """
-
-"""
-#CHANGING LOCATION TO PROJECT PATH AND CREATING SUBDIRECTORY
-cd ${WKDIR}
-mkdir -m 771 -p ${WKDIR}/calling/${DATASET_FOLDER}
-"""
