@@ -80,7 +80,6 @@ if config["basecalling_mode"] == "basic":
 if config["steps"]["basecalling"]:
 
     # environments
-    #TOOL_DORADO = "/mnt/beegfs/pipelines/dorado/0.5.3/dorado-0.5.3-linux-x64/bin/dorado"
     SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.7.3.simg"
     
     # parameters
@@ -89,18 +88,15 @@ if config["steps"]["basecalling"]:
             if 'dorado_basecaller' in config and 'model' in config['dorado_basecaller']:
                 DORADO_MODEL = [config['dorado_basecaller']['model'], ""]
             else:
-                #DORADO_MODEL = ["/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0", ""]
                 DORADO_MODEL = ["/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0", ""]
         elif config['basecalling_mode'] == "methylation":
             if 'dorado_basecaller' in config and 'model' in config['dorado_basecaller']:
                 MODE_BASIC = config['dorado_basecaller']['model']
             else:
-                #MODE_BASIC = "/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0"
                 MODE_BASIC = "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0"
             if 'dorado_basecaller' in config and 'model_meth' in config['dorado_basecaller']:
                 MODEL_METH = config['dorado_basecaller']['model_meth']
             else:
-                #MODEL_METH = "/mnt/beegfs/pipelines/dorado/model/model_r10/dna_r10.4.1_e8.2_400bps_sup@v4.2.0_5mCG_5hmCG@v2"
                 MODEL_METH = "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0_5mCG_5hmCG@v1"
             DORADO_MODEL = [MODE_BASIC,MODEL_METH]
         else: sys.exit("Error: 'basecalling_mode' unknown. Check your configuration file.")
@@ -111,7 +107,6 @@ if config["steps"]["basecalling"]:
 if config["steps"]["alignment"]:
 
     # environments
-    #TOOL_DORADO = "/mnt/beegfs/pipelines/dorado/0.5.3/dorado-0.5.3-linux-x64/bin/dorado"
     SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.7.3.simg"
 
     # parameters
@@ -135,7 +130,6 @@ if config["steps"]["alignment"] or config["input_format"] == "bam" :
     if config['basecalling_mode'] == "methylation":
         # environments
         SING_ENV_GENEDMR = PIPELINE_DIR +  "/envs/singularity/GeneDMR.simg"
-        #TOOL_MODKIT = "/mnt/beegfs/pipelines/dorado/tools/modkit_v0.2.6/dist/modkit"
         SING_ENV_MODKIT = PIPELINE_DIR + "/envs/singularity/modkit_0.3.2.simg"
         # parameters
         def list_meth_type(list_of_model):
@@ -143,7 +137,7 @@ if config["steps"]["alignment"] or config["input_format"] == "bam" :
         	return list(chain(*type_meth))
         if 'dorado_basecaller' in config and 'meth_type' in config['dorado_basecaller'] :
             METH_TYPE = config['dorado_basecaller']['meth_type']
-        elif MODEL_METH in locals() :
+        elif 'MODEL_METH' in locals() :
             METH_TYPE = list_meth_type(DORADO_MODEL)
         else: sys.exit("Error: 'meth_type' in 'dorado_basecaller' have to be set. Check your configuration file.")
 
@@ -156,19 +150,9 @@ if config["steps"]["differential_methylation_sample"] or config["steps"]["differ
     CONDA_ENV_SAMTOOLS = PIPELINE_DIR + "/envs/conda/samtools_1.11.yaml"
     
     # parameters
-    # Get methylation analysis type(s) from the list of models
-    def list_meth_type(list_of_model):
-    	type_meth=[ re.split("@v[0-9\.]+",x)[-2].split("_")[1:] for x in list_of_model[1:]]
-    	return list(chain(*type_meth))
-    if 'dorado_basecaller' in config and 'meth_type' in config['dorado_basecaller'] :
-        METH_TYPE = config['dorado_basecaller']['meth_type']
-    elif MODEL_METH in locals() :
-        METH_TYPE = list_meth_type(DORADO_MODEL)
-    else: sys.exit("Error: 'meth_type' in 'dorado_basecaller' have to be set. Check your configuration file.")
     REF_TYPE=["Alu","Transcript","CpG"]
     STRAND=["fwd","rev"]
-    
-    
+
 # VARIANT ANALYSIS
 if 'variant_calling_mode' in config:
     if config["steps"]["snv_calling"]:
@@ -420,16 +404,16 @@ if config["steps"]["cnv_calling"]:
 if config["steps"]["differential_methylation_sample"]:
     PAIR_TMP=list(itertools.permutations(list(design['sample_id']),2))
     PAIR_METHYL=["_vs_".join(elms) for elms in PAIR_TMP]
-    sys.stderr.write("PAIR_METHYL:\n")
-    sys.stderr.write(', '.join(PAIR_METHYL) + "\n")
+    #sys.stderr.write("PAIR_METHYL:\n")
+    #sys.stderr.write(', '.join(PAIR_METHYL) + "\n")
 
 if config["steps"]["differential_methylation_condition"]:
     CASE=list(design[design.methyl_group == 'case']['sample_id'])
     CONTROL=list(design[design.methyl_group == 'control']['sample_id'])
-    sys.stderr.write("CASE:\n")
-    sys.stderr.write(', '.join(CASE) + "\n")
-    sys.stderr.write("CONTROL:\n")
-    sys.stderr.write(', '.join(CONTROL) + "\n")
+    #sys.stderr.write("CASE:\n")
+    #sys.stderr.write(', '.join(CASE) + "\n")
+    #sys.stderr.write("CONTROL:\n")
+    #sys.stderr.write(', '.join(CONTROL) + "\n")
 
 if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "somatic":
     PAIR_SOMATIC = []
@@ -439,8 +423,8 @@ if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config[
             PAIR_SOMATIC = PAIR_SOMATIC + [ design["sample_id"].iloc[i] + "_vs_" + design["somatic_ctrl"].iloc[i] ]
         else:
             PAIR_SOMATIC = PAIR_SOMATIC + [ design[design.somatic_ctrl == design["sample_id"].iloc[i]]["sample_id"].iloc[0] + "_vs_" + design["sample_id"].iloc[i] ]
-    sys.stderr.write("PAIR_SOMATIC:\n")
-    sys.stderr.write(', '.join(PAIR_SOMATIC) + "\n")
+    #sys.stderr.write("PAIR_SOMATIC:\n")
+    #sys.stderr.write(', '.join(PAIR_SOMATIC) + "\n")
 
 
 ################### Wilcards Constraints ###################
