@@ -213,7 +213,7 @@ snakemake --profile ${LR_pipeline}/profiles/slurm \
 |       **Step**      | **Tool** |                       **Description**                              |
 |:-------------------:|:--------:|:------------------------------------------------------------------:|
 | Basecalling         | [Dorado](https://github.com/nanoporetech/dorado)   | Perform basecalling (SUP)                                          |
-| Methylation calling | [Dorado](https://github.com/nanoporetech/dorado)   | Perform methylation calling for 5mCG and 5hmCG modifications (SUP) |
+| Methylation calling | [Dorado](https://github.com/nanoporetech/dorado), [Modkit](https://github.com/nanoporetech/modkit) | Perform methylation calling for 5mCG and 5hmCG modifications (SUP) and extract methylation information |
 ### Alignment
 |     **Step**    	|     **Tool**     	|                                      **Description**                                     	|
 |:---------------:	|:----------------:	|:----------------------------------------------------------------------------------------:	|
@@ -224,11 +224,12 @@ snakemake --profile ${LR_pipeline}/profiles/slurm \
 ### Quality Control
 |   **Step**   |      **Tool**      |                                  **Description**                                  |
 |:------------:|:------------------:|:---------------------------------------------------------------------------------:|
-| BAM QC       | [NanoPlot](https://github.com/wdecoster/NanoPlot), [Qualimap](http://qualimap.conesalab.org/doc_html/index.html) | Generate general QC metrics and graphs regarding a BAM file                       |
-| BAM QC       | [Mosdepth](https://github.com/brentp/mosdepth)           | Calculate the depth of coverage of a BAM file                                     |
-| BAM to FASTQ | [samtools](https://www.htslib.org/doc/#manual-pages)           | Convert BAM file to FASTQ file for supplementary QC                               |
+| BAM QC       | [NanoPlot](https://github.com/wdecoster/NanoPlot), [Qualimap](http://qualimap.conesalab.org/doc_html/index.html), [Samtools](https://www.htslib.org/doc/samtools.html) | Generate general QC metrics and graphs regarding a BAM file                       |
+| BAM QC       | [Mosdepth](https://github.com/brentp/mosdepth), [Samtools](https://www.htslib.org/doc/samtools-coverage.html)           | Calculate the depth and coverage of a BAM file                                     |
+| BAM to FASTQ | [samtools](http://www.htslib.org/doc/samtools-fasta.html)           | Convert BAM file to FASTQ file for supplementary QC                               |
 | FASTQ QC     | [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)             | Perform QC on FASTQ file                                                          |
 | FASTQ QC     | [FastQ-Screen](https://github.com/mp15/FastQ-Screen/tree/minimap2)       | Perform library quality check on FASTQ file                                       |
+| METHYLATION QC     | R scripts       | Perform Methylation QC                                       |
 | QC report    | [MultiQC](https://multiqc.info/docs/)            | Aggregates BAM and FASTQ QC results to generate a final QC report for all samples |
 ### Differential Methylation Analysis
 |     **Step**     |   **Tool**   |                                         **Description**                                        |
