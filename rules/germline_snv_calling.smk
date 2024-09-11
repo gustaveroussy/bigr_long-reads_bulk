@@ -15,7 +15,7 @@ def clair3_input_model_path(wildcards):
 
 rule clair3:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam"),
         fa_ref = config["references"]["genome"],
         clair3_path = clair3_input_model_path
     output:
@@ -51,12 +51,12 @@ def sambamba_markdup_input_bam(wildcards):
         index = BAM_NAME.index(wildcards.bam_name)
         input = SYMLINK_FILES[index]
     elif config["steps"]["basecalling"]:
-        input = os.path.normpath(OUTPUT_DIR + "/reconcat/" + wildcards.bam_name + "/" + wildcards.bam_name + "_sorted.bam")
+        input = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + wildcards.bam_name + "/" + wildcards.bam_name + "_sorted.bam")
     return input
     
 rule sambamba_markdup:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam")
     output:
         markdup_bam = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/markdup/{sample_name}.bam")
     threads:
