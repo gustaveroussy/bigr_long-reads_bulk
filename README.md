@@ -128,7 +128,7 @@ You can change various fields in the `config.yaml` file such as tools parameters
 #### :two: Design file
 It must be a comma separated file (.csv where comma is ",") and its path should be given in the `config.yaml` file. Field names are the following and depend on the analysis you wish to perform:
 - **sample_id _(required)_**: the sample name of you sample (it could be different that your fastq files).
-- **path_file _(required)_**: absolute path to the BAM file or to the POD5 directory.
+- **path_file _(required)_**: absolute path to the POD5 directory or the BAM file (which must be aligned, sorted and indexed).
 - **methyl_group _(optional)_**: name of the group/condition corresponding to the sample, it will be used only for DMR analysis. You can only use 2 groups/conditions at the moment, named `case` and `control`. It is required only if you set `differential_methylation_condition` step as `true`. 
 - **somatic_ctrl _(optional)_**: sample id corresponding to the normal sample. It is required only if you set the `variant_calling_mode` as  `somatic`.
 - **cnv_cancer _(optional)_**: boolean to identify the sample as normal or cancer sample, for CNV analysis. It is required only if you set `cnv_calling` step as `true`.
@@ -195,7 +195,7 @@ Don't forget to change the version of the pipeline and the path to your configur
 #SBATCH --partition=longq
 
 source /mnt/beegfs/software/miniconda/24.3.0/etc/profile.d/conda.sh
-conda activate /mnt/beegfs/pipelines/bigr_long-reads_bulk/<version>/envs/conda/snakemake
+conda activate /mnt/beegfs/pipelines/bigr_long-reads_bulk/<version>/envs/compiled_conda/snakemake
 module load singularity
 
 LR_pipeline="/mnt/beegfs/pipelines/bigr_long-reads_bulk/<version>/"
@@ -219,14 +219,14 @@ snakemake --profile ${LR_pipeline}/profiles/slurm \
 |:---------------:	|:----------------:	|:----------------------------------------------------------------------------------------:	|
 | Filter          	| python script    	| Filter to keep only reads with quality score >Q10 and length >200                       	|
 | Alignment       	| [Dorado](https://github.com/nanoporetech/dorado) 	| Align sample reads to the reference genome, remove secondary alignments                 	|
-| Concatenate BAM 	| [samtools](https://www.htslib.org/doc/#manual-pages)         	| As POD5 files were treated by batch, BAM concatenation is more convenient for next steps 	|
-| Sort, index     	| [samtools](https://www.htslib.org/doc/#manual-pages)         	| Sort and index the just generated BAM files                                             	|
+| Concatenate BAM 	| [Samtools](https://www.htslib.org/doc/#manual-pages)         	| As POD5 files were treated by batch, BAM concatenation is more convenient for next steps 	|
+| Sort, index     	| [Samtools](https://www.htslib.org/doc/#manual-pages)         	| Sort and index the just generated BAM files                                             	|
 ### Quality Control
 |   **Step**   |      **Tool**      |                                  **Description**                                  |
 |:------------:|:------------------:|:---------------------------------------------------------------------------------:|
 | BAM QC       | [NanoPlot](https://github.com/wdecoster/NanoPlot), [Qualimap](http://qualimap.conesalab.org/doc_html/index.html), [Samtools](https://www.htslib.org/doc/samtools.html) | Generate general QC metrics and graphs regarding a BAM file                       |
 | BAM QC       | [Mosdepth](https://github.com/brentp/mosdepth), [Samtools](https://www.htslib.org/doc/samtools-coverage.html)           | Calculate the depth and coverage of a BAM file                                     |
-| BAM to FASTQ | [samtools](http://www.htslib.org/doc/samtools-fasta.html)           | Convert BAM file to FASTQ file for supplementary QC                               |
+| BAM to FASTQ | [Samtools](http://www.htslib.org/doc/samtools-fasta.html)           | Convert BAM file to FASTQ file for supplementary QC                               |
 | FASTQ QC     | [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)             | Perform QC on FASTQ file                                                          |
 | FASTQ QC     | [FastQ-Screen](https://github.com/mp15/FastQ-Screen/tree/minimap2)       | Perform library quality check on FASTQ file                                       |
 | METHYLATION QC     | R scripts       | Perform Methylation QC                                       |
