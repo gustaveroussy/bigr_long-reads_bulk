@@ -11,15 +11,15 @@ def get_targets():
   if config["steps"]["basecalling"]:
       targets["basecalling"]=[
         #basecalled ubam
-        expand(os.path.normpath(OUTPUT_DIR + "/calling/{sample_name}/{batch_name}.bam"),zip,batch_name=BATCH_NAME,sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/tmp/calling/{sample_name}/{batch_name}.bam"),zip,batch_name=BATCH_NAME,sample_name=SAMPLE_NAME),
       ]
   #ALIGNMENT
   if config["steps"]["alignment"]:
       targets["filter_align"]=[
         #filter
-#        expand(os.path.normpath(OUTPUT_DIR + "/filtered/{sample_name}/{batches}_filtered.bam"),zip,batches=BATCH_NAME,sample_name=SAMPLE_NAME),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/filtered/{sample_name}/{batches}_filtered.bam"),zip,batches=BATCH_NAME,sample_name=SAMPLE_NAME),
         #alignment
-#        expand(os.path.normpath(OUTPUT_DIR + "/alignment/{sample_name}/{batches}_aligned.bam"),zip,batches=BATCH_NAME,sample_name=SAMPLE_NAME),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/alignment/{sample_name}/{batches}_aligned.bam"),zip,batches=BATCH_NAME,sample_name=SAMPLE_NAME),
         #concat
 #        expand(os.path.normpath(OUTPUT_DIR + "/concat_sort/{sample_name}/{sample_name}_concat.bam"),sample_name=SAMPLE_NAME),
         #sort
@@ -30,12 +30,12 @@ def get_targets():
   if config["steps"]["alignment"] or config["input_format"] == "bam":
       targets["split_concat_bam"]=[
         #split
-#        expand(os.path.normpath(OUTPUT_DIR + "/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME),
-#        expand(os.path.normpath(OUTPUT_DIR + "/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam.bai"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam.bai"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME),
         #reconcat
-#        expand(os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_reconcat.bam"),sample_name=SAMPLE_NAME),
-#        expand(os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),sample_name=SAMPLE_NAME),
-#        expand(os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam.bai"),sample_name=SAMPLE_NAME)
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_reconcat.bam"),sample_name=SAMPLE_NAME),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam"),sample_name=SAMPLE_NAME),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam.bai"),sample_name=SAMPLE_NAME)
       ]
       #QUALITY-CONTROL
       targets["bam_qc"]=[
@@ -122,10 +122,10 @@ def get_targets():
   if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"]:
       targets["methylation"]=[
         #modkit separate mod
-#        expand(os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
-#        expand(os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
         #modkit pileup uncombined strand
-#        expand(os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
         #modkit pileup combined strand
         #expand(os.path.normpath(OUTPUT_DIR + "/bed_combined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_comb.bed"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
         #expand(os.path.normpath(OUTPUT_DIR + "/bed_combined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_comb_format.bed"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
@@ -134,11 +134,11 @@ def get_targets():
         #split bed
         #expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{chr_number}/{meth_type}/{sample_name}-chr{chr_number}-{meth_type}-{strands}.bed"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE,strands=STRAND),
         #split Alu
-#        expand(os.path.normpath(OUTPUT_DIR + "/resources/Alu/refseq.bed_Alu_chr{chr_number}_{strands}.txt"),chr_number=CHR_NUMBER,strands=STRAND),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/resources/Alu/refseq.bed_Alu_chr{chr_number}_{strands}.txt"),chr_number=CHR_NUMBER,strands=STRAND),
         #split Transcript
-#        expand(os.path.normpath(OUTPUT_DIR + "/resources/Transcript/refseq.bed_Transcript_chr{chr_number}_{strands}.txt"),chr_number=CHR_NUMBER,strands=STRAND),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/resources/Transcript/refseq.bed_Transcript_chr{chr_number}_{strands}.txt"),chr_number=CHR_NUMBER,strands=STRAND),
         #split CpG
-#        expand(os.path.normpath(OUTPUT_DIR + "/resources/CpG/cpgi.bed_CpG_chr{chr_number}.txt"),chr_number=CHR_NUMBER)
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/resources/CpG/cpgi.bed_CpG_chr{chr_number}.txt"),chr_number=CHR_NUMBER)
       ]
   if config["steps"]["differential_methylation_sample"]:
       targets["differential_methylation_sample"]=[

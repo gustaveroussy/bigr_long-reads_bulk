@@ -10,7 +10,7 @@ This rule makes the SV Calling by sniffles
 
 rule sniffles:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam"),
         fa_ref = config["references"]["genome"]
     output:
         vcf_file = os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/sniffles/{sample_name}/{sample_name}_SV.vcf"),
@@ -57,7 +57,7 @@ This rule makes the SV Calling by cuteSV
 
 rule cuteSV:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam"),
         fa_ref = config["references"]["genome"]
     output:
         vcf_file = os.path.normpath(OUTPUT_DIR + "/SV_Calling/Germline/cuteSV/{sample_name}/{sample_name}_SV.vcf")

@@ -11,9 +11,9 @@ This rule launches ubam filtering
 
 rule ubam_filtering:
     input: 
-        ubam = os.path.normpath(OUTPUT_DIR + "/calling/{sample_name}/{batch_name}.bam")
+        ubam = os.path.normpath(OUTPUT_DIR + "/tmp/calling/{sample_name}/{batch_name}.bam")
     output: 
-        ubam = temp(os.path.normpath(OUTPUT_DIR + "/filtered/{sample_name}/{batch_name}_filtered.bam"))
+        ubam = temp(os.path.normpath(OUTPUT_DIR + "/tmp/filtered/{sample_name}/{batch_name}_filtered.bam"))
     params:
         script = os.path.normpath(PIPELINE_DIR + "/script")
     threads: 1
@@ -32,9 +32,9 @@ This rule launches the alignment step
 """
 rule alignment:
     input:
-        ubam = os.path.normpath(OUTPUT_DIR + "/filtered/{sample_name}/{batch_name}_filtered.bam")
+        ubam = os.path.normpath(OUTPUT_DIR + "/tmp/filtered/{sample_name}/{batch_name}_filtered.bam")
     output:
-        bam = temp(os.path.normpath(OUTPUT_DIR + "/alignment/{sample_name}/{batch_name}_aligned.bam"))
+        bam = temp(os.path.normpath(OUTPUT_DIR + "/tmp/alignment/{sample_name}/{batch_name}_aligned.bam"))
     params:
         reference = config["references"]["genome"],
         ref_path = os.path.normpath(config["references"]["genome"])
@@ -55,7 +55,7 @@ This rule concatenates all BAM per sample
 """
 def input_concat_bam(wildcards):
     indices = [i for i in range(len(SAMPLE_NAME)) if SAMPLE_NAME[i] == wildcards.sample_name]
-    input = expand(os.path.normpath(OUTPUT_DIR + "/alignment/"+ wildcards.sample_name +"/{batch_name}_aligned.bam"), batch_name=[BATCH_NAME[i] for i in indices])
+    input = expand(os.path.normpath(OUTPUT_DIR + "/tmp/alignment/"+ wildcards.sample_name +"/{batch_name}_aligned.bam"), batch_name=[BATCH_NAME[i] for i in indices])
     return input
 
 rule concat_bam:

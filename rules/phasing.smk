@@ -9,11 +9,11 @@ This rule makes the phasing of SNV by whatshap
 """
 def phasing_input_bam(wildcards):
     if config["variant_calling_mode"] == "germline":
-        input = os.path.normpath(OUTPUT_DIR + "/reconcat/" + wildcards.sample_name_or_pair_somatic + "/" + wildcards.sample_name_or_pair_somatic + "_sorted.bam")
+        input = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + wildcards.sample_name_or_pair_somatic + "/" + wildcards.sample_name_or_pair_somatic + "_sorted.bam")
         return input
     if config["variant_calling_mode"] == "somatic":
-        input_n = os.path.normpath(OUTPUT_DIR + "/reconcat/" + str(wildcards.sample_name_or_pair_somatic).split("_vs_")[0] + "/" + str(wildcards.sample_name_or_pair_somatic).split("_vs_")[0] + "_sorted.bam")
-        input_t = os.path.normpath(OUTPUT_DIR + "/reconcat/" + str(wildcards.sample_name_or_pair_somatic).split("_vs_")[1] + "/" + str(wildcards.sample_name_or_pair_somatic).split("_vs_")[1] + "_sorted.bam")
+        input_n = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + str(wildcards.sample_name_or_pair_somatic).split("_vs_")[0] + "/" + str(wildcards.sample_name_or_pair_somatic).split("_vs_")[0] + "_sorted.bam")
+        input_t = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + str(wildcards.sample_name_or_pair_somatic).split("_vs_")[1] + "/" + str(wildcards.sample_name_or_pair_somatic).split("_vs_")[1] + "_sorted.bam")
         return [input_n, input_t]
 
 rule phasing:
@@ -91,7 +91,7 @@ This rule haplotags reads (separates reads between Haplotype 1 and Haplotype 2),
 
 rule phasing_haplotagging:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam"),
         vcf_gz_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/whatshap/{sample_name}{compl}_phased.vcf.gz"),
         vcf_index_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/whatshap/{sample_name}{compl}_phased.vcf.gz.tbi")
     output:

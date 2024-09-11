@@ -10,7 +10,7 @@ This rule converts BAM file to FASTQ file
 
 rule samtools_bam_to_fastq:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam")
     output:
         fastq_file = os.path.normpath(OUTPUT_DIR + "/Fastq/{sample_name}.fastq.gz")
     threads:

@@ -47,8 +47,8 @@ rule split_sorted_bam:
         bam = os.path.normpath(OUTPUT_DIR + "/concat_sort/{sample_name}/{sample_name}_sorted.bam"),
         index = os.path.normpath(OUTPUT_DIR + "/concat_sort/{sample_name}/{sample_name}_sorted.bam.bai")
     output:
-        bam = temp(os.path.normpath(OUTPUT_DIR + "/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam")),
-        index = temp(os.path.normpath(OUTPUT_DIR + "/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam.bai"))
+        bam = temp(os.path.normpath(OUTPUT_DIR + "/tmp/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam")),
+        index = temp(os.path.normpath(OUTPUT_DIR + "/tmp/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam.bai"))
     threads: 12
     resources:
         mem_mb = lambda wildcards, attempt: min(10240 + 5120 * (attempt - 1 ), 102400),
@@ -67,13 +67,13 @@ This rule re-concatenates all split BAM files per sample
 
 rule reconcat_split_bam:
     input:
-        bams = expand(os.path.normpath(OUTPUT_DIR + "/split_chr/{{sample_name}}/{{sample_name}}_chr_{chr_number}.bam"),chr_number=CHR_NUMBER)
+        bams = expand(os.path.normpath(OUTPUT_DIR + "/tmp/split_chr/{{sample_name}}/{{sample_name}}_chr_{chr_number}.bam"),chr_number=CHR_NUMBER)
     output:
-        bam = temp(os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_reconcat.bam")),
-        bam_sorted = temp(os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")),
-        index = temp(os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam.bai"))
+        bam = temp(os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_reconcat.bam")),
+        bam_sorted = temp(os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam")),
+        index = temp(os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam.bai"))
     params:
-        tmp = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/")
+        tmp = os.path.normpath(OUTPUT_DIR + "/tmp/tmp/reconcat/")
     threads: 12
     resources:
         mem_mb = lambda wildcards, attempt: min(20480 + 51200 * (attempt - 1 ), 204800),

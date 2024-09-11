@@ -24,6 +24,7 @@ sys.stderr.write("                        +++++++++++++           \n")
 sys.stderr.write("                           +++++++              \n")
 
 sys.stderr.write("\n                Bulk long reads pipeline      \n")
+sys.stderr.write("\n                      version 2.0.1           \n")
 
 sys.stderr.write("\nFor any question, sent an email to bigr@gustaveroussy.fr")
 sys.stderr.write("\n############################################################ \n\n")
@@ -406,7 +407,7 @@ if config["steps"]["differential_methylation_sample"] or config["steps"]["differ
         for line in range(0, len(design["path_file"]), 1):
             SAMPLE_NAME.append(design["sample_id"].iloc[line])
             ORIG_FILE.append(design["path_file"].iloc[line])
-            SYMLINK_FILES.append(os.path.normpath(OUTPUT_DIR + "/concat_sort/" + design["sample_id"].iloc[line] + "/" + design["sample_id"].iloc[line] + "_sorted.bam"))
+            SYMLINK_FILES.append(os.path.normpath(OUTPUT_DIR + "/tmp/concat_sort/" + design["sample_id"].iloc[line] + "/" + design["sample_id"].iloc[line] + "_sorted.bam"))
 
 # Make the data structure for CNV cancer parameter
 if config["steps"]["cnv_calling"]:
@@ -481,11 +482,11 @@ if config["steps"]["differential_methylation_condition"]:
 
 # to get input normal bam files
 def get_input_normal_bam(wildcards):
-        return os.path.normpath(OUTPUT_DIR + "/reconcat/" + str(wildcards.pair_somatic).split("_vs_")[0] + "/" + str(wildcards.pair_somatic).split("_vs_")[0] + "_sorted.bam")
+        return os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + str(wildcards.pair_somatic).split("_vs_")[0] + "/" + str(wildcards.pair_somatic).split("_vs_")[0] + "_sorted.bam")
 
 # to get input tumor bam files
 def get_input_tumor_bam(wildcards):
-        return os.path.normpath(OUTPUT_DIR + "/reconcat/" + str(wildcards.pair_somatic).split("_vs_")[1] + "/" + str(wildcards.pair_somatic).split("_vs_")[1] + "_sorted.bam")
+        return os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + str(wildcards.pair_somatic).split("_vs_")[1] + "/" + str(wildcards.pair_somatic).split("_vs_")[1] + "_sorted.bam")
 
 sys.stderr.write("\n########################### Run ############################\n\n")
 

@@ -10,7 +10,7 @@ This rule makes the mosdepth coverage calculation as recommanded by Spectre for 
 
 rule cnv_mosdepth:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam")
+        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam")
     output:
         os.path.normpath(OUTPUT_DIR + "/CNV_Calling/mosdepth/{sample_name}/{sample_name}_Q20.regions.bed.gz"),
         os.path.normpath(OUTPUT_DIR + "/CNV_Calling/mosdepth/{sample_name}/{sample_name}_Q20.regions.bed.gz.csi"),

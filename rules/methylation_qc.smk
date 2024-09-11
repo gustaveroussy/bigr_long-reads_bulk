@@ -5,7 +5,7 @@ This rule launches methylation QC
 
 rule meth_QC_ratio_fwd_rev:
     input:
-        uncomb_bed = os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed")
+        uncomb_bed = os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed")
     output:
         per_pos_per_strand_gam_ratio = os.path.normpath(OUTPUT_DIR + "/Quality_Control/methylation_QC/per_pos_per_strand_gam_ratio_{sample_name}_chr{chr_number}_{meth_type}_mqc.png")
     threads: 2
@@ -32,7 +32,7 @@ rule motif_cg_gref:
         ref_fa = config["references"]["genome"],
         ref_path = os.path.normpath(config["references"]["genome"])
     output:
-        cg_motif = os.path.normpath(OUTPUT_DIR + "/resources/motif_cg.bed")
+        cg_motif = os.path.normpath(OUTPUT_DIR + "/tmp/resources/motif_cg.bed")
     threads: 1
     resources:
         mem_mb = lambda wildcards, attempt: 1024 * attempt,
@@ -51,9 +51,9 @@ This rule concatenate all chromosomes of a sample, from strand combined bed
 
 rule concat_all_chromosome_per_sample:
     input:
-        uncomb_bed = expand(os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{{sample_name}}/{{meth_type}}/{{sample_name}}_chr{chr_number}_{{meth_type}}_uncomb.bed"), chr_number = CHR_NUMBER),
+        uncomb_bed = expand(os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{{sample_name}}/{{meth_type}}/{{sample_name}}_chr{chr_number}_{{meth_type}}_uncomb.bed"), chr_number = CHR_NUMBER),
     output:
-        bed_uncomb_concat_formated = os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_{meth_type}_uncomb.bed")
+        bed_uncomb_concat_formated = os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_{meth_type}_uncomb.bed")
     threads: 1
     resources:
         mem_mb = lambda wildcards, attempt: 1024 * attempt,
@@ -68,12 +68,12 @@ This rule launch methylation QC barplot of methylated GC
 """
 
 def params_bed_uncomb_concat_formated_all_samples(wildcards):
-        return  ",".join(list(dict.fromkeys(expand(os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{sample_name}/"+ wildcards.meth_type  + "/{sample_name}_" + wildcards.meth_type + "_uncomb.bed"), sample_name = SAMPLE_NAME))))
+        return  ",".join(list(dict.fromkeys(expand(os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{sample_name}/"+ wildcards.meth_type  + "/{sample_name}_" + wildcards.meth_type + "_uncomb.bed"), sample_name = SAMPLE_NAME))))
 
 rule meth_QC_barplot_CG:
     input:
-        bed_comb_concat_formated_all_samples = expand(os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{sample_name}/{{meth_type}}/{sample_name}_{{meth_type}}_uncomb.bed"), sample_name = SAMPLE_NAME),
-        cg_motif = os.path.normpath(OUTPUT_DIR + "/resources/motif_cg.bed"),
+        bed_comb_concat_formated_all_samples = expand(os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{sample_name}/{{meth_type}}/{sample_name}_{{meth_type}}_uncomb.bed"), sample_name = SAMPLE_NAME),
+        cg_motif = os.path.normpath(OUTPUT_DIR + "/tmp/resources/motif_cg.bed"),
     output:
         os.path.normpath(OUTPUT_DIR + "/Quality_Control/methylation_QC/barplot_methylated_CG_{meth_type}_mqc.png")
     params:

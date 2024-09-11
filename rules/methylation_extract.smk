@@ -19,9 +19,9 @@ def ignore_meth(wildcards):
 
 rule modkit_separate_mod:
     input:
-        bam = os.path.normpath(OUTPUT_DIR + "/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam")
+        bam = os.path.normpath(OUTPUT_DIR + "/tmp/split_chr/{sample_name}/{sample_name}_chr_{chr_number}.bam")
     output:
-        bam = temp(os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"))
+        bam = temp(os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"))
     params:
         meth_to_ignore = ignore_meth
     threads: 12
@@ -41,9 +41,9 @@ This rule indexes the BAM file from modkit
 """
 rule bam_index:
     input:
-        bam = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam")
+        bam = os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam")
     output:
-        index = temp(os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai"))
+        index = temp(os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai"))
     threads: 1
     resources:
         mem_mb=lambda wildcards, attempt: min(1024 + 5120 * (attempt - 1 ),20480),
@@ -61,15 +61,15 @@ These 2 rules launch BED files generation (strand uncombined and combined)
 
 rule modkit_pileup_uncomb:
     input:
-        bam = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"),
-        index = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai")
+        bam = os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"),
+        index = os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai")
     output:
-        uncomb_bed = temp(os.path.normpath(OUTPUT_DIR + "/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed"))
+        uncomb_bed = temp(os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed"))
     params:
         reference = config["references"]["genome"],
         ref_path = os.path.normpath(config["references"]["genome"])
     log:
-        os.path.normpath(OUTPUT_DIR + "/logs/modkit_pileup/{sample_name}_chr{chr_number}_{meth_type}_uncombined.log")
+        os.path.normpath(OUTPUT_DIR + "/tmp/logs/modkit_pileup/{sample_name}_chr{chr_number}_{meth_type}_uncombined.log")
     threads: 12
     resources:
         mem_mb=lambda wildcards, attempt: min(5120 + 5120 * (attempt - 1 ),20480),
@@ -83,15 +83,15 @@ rule modkit_pileup_uncomb:
 
 rule modkit_pileup_comb:
     input:
-        bam = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"),
-        index = os.path.normpath(OUTPUT_DIR + "/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai")
+        bam = os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"),
+        index = os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai")
     output:
         comb_bed = temp(os.path.normpath(OUTPUT_DIR + "/bed_combined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_comb.bed"))
     params:
         reference = config["references"]["genome"],
         ref_path = os.path.normpath(config["references"]["genome"])
     log:
-        os.path.normpath(OUTPUT_DIR + "/logs/modkit_pileup/{sample_name}_chr_{chr_number}_{meth_type}_combined.log")
+        os.path.normpath(OUTPUT_DIR + "/tmp/logs/modkit_pileup/{sample_name}_chr_{chr_number}_{meth_type}_combined.log")
     threads: 12
     resources:
         mem_mb=lambda wildcards, attempt: min(5120 + 5120 * (attempt - 1 ),20480),

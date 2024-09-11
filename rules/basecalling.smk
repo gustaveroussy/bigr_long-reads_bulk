@@ -12,7 +12,7 @@ rule dorado_basecalling:
     input:
         pod5_folder = os.path.normpath(OUTPUT_DIR + "/tmp/{samples_name}/{batch_name}/")
     output:
-        os.path.normpath(OUTPUT_DIR + "/calling/{samples_name}/{batch_name}.bam")
+        os.path.normpath(OUTPUT_DIR + "/tmp/calling/{samples_name}/{batch_name}.bam")
     params:
         basic_model = DORADO_MODEL[0],
         math_model = DORADO_MODEL[1],

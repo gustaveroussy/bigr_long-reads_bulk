@@ -10,7 +10,7 @@ This rule makes the parsing of all the supporting reads of putative somatic SVs 
 
 rule nanomonsv_parsing:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam"),
         fa_ref = config["references"]["genome"],
     output:
         os.path.normpath(OUTPUT_DIR + "/SV_Calling/Somatic/nanomonsv/{pair_somatic}/{sample_name}.deletion.sorted.bed.gz"),
