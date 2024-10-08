@@ -1,7 +1,7 @@
 # :dna: bigr_long-reads_bulk
 This pipeline is built to analyse bulk long-reads DNA-seq data from PromethION (Oxford Nanopore Technologies). It can perform basecalling and methylation calling, Differential Methylated Regions analysis, germline and somatic variants identification (SNV, SV, long CNV) and phasing. 
 
-POD5 directory or BAM files (aligned BAM) are accepted as input.
+POD5, UBAM (unaligned BAM) or BAM (aligned BAM) files are accepted as input.
 
 ## Table of Contents
 1. [Pipeline Overview](#clipboard-pipeline-overview)
@@ -73,7 +73,7 @@ You can copy/paste and modify any model config file to fit your needs:
 
 There are various fields of interest in the config file:
 
-- **input_format:** accepts `pod5` (POD5 directory) or `bam` (aligned BAM file). 
+- **input_format:** accepts `pod5` (POD5 directory), `ubam` (unaligned BAM directory or file) or `bam` (aligned BAM file). 
 
 - **basecalling_mode:** accepts `basic` or `methylation`. Choose if you wish to perform basecalling only or methylation calling (5mCG and 5hmCG in Super Accuracy = SUP).
 
@@ -128,7 +128,7 @@ You can change various fields in the `config.yaml` file such as tools parameters
 #### :two: Design file
 It must be a comma separated file (.csv where comma is ",") and its path should be given in the `config.yaml` file. Field names are the following and depend on the analysis you wish to perform:
 - **sample_id _(required)_**: the sample name of you sample (it could be different that your fastq files).
-- **path_file _(required)_**: absolute path to the POD5 directory or the BAM file (which must be aligned, sorted and indexed).
+- **path_file _(required)_**: absolute path to the POD5, the UBAM directory, the UBAM file (which must be sorted and indexed) or the BAM file (which must be aligned, sorted and indexed).
 - **methyl_group _(optional)_**: name of the group/condition corresponding to the sample, it will be used only for DMR analysis. You can only use 2 groups/conditions at the moment, named `case` and `control`. It is required only if you set `differential_methylation_condition` step as `true`. 
 - **somatic_ctrl _(optional)_**: sample id corresponding to the normal sample. It is required only if you set the `variant_calling_mode` as  `somatic`.
 - **cnv_cancer _(optional)_**: boolean to identify the sample as normal or cancer sample, for CNV analysis. It is required only if you set `cnv_calling` step as `true`.
@@ -141,7 +141,7 @@ sample1_Normal,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_
 sample2_Tumor,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample2_Tumor/,case,sample2_Normal,TRUE
 sample2_Normal,/mnt/beegfs/scratch/n_rabearivelo/test_pipeline/methylation/data_input/sample2_Normal/,control,,FALSE
 ```
-Here, every step available in the config file can be executed and both variant analysis modes can be used.
+Here, every step available in the config file can be executed and both variant analysis modes can be used. It would have also worked using unaligned BAM directories as input in `path_file` column.
 <details>
 
 **<summary>Other design files examples</summary>**
@@ -152,7 +152,7 @@ sample_id,path_file
 sample1_KO,/path/to/data_input/sample1/pod5_dir/
 sample2_WT,/path/to/data_input/sample2/pod5_dir/
 ```
-Here, every step available in the config file can be executed, except `differential_methylation_condition` step without `methyl_group` column and long CNV calling in `cnv_calling` step without `cnv_cancer` column. No `somatic` variant calling mode can be used without `somatic_ctrl` column.
+Works with both POD5 and unaligned BAM directories in `path_file` column. Here, every step available in the config file can be executed, except `differential_methylation_condition` step without `methyl_group` column and long CNV calling in `cnv_calling` step without `cnv_cancer` column. No `somatic` variant calling mode can be used without `somatic_ctrl` column.
 
 <ins>BAM file as input:</ins>
 ```
@@ -160,7 +160,7 @@ sample_id,path_file,methyl_group
 sample1_KO,/path/to/data_input/sample1.bam,case
 sample2_WT,/path/to/data_input/sample2.bam,control
 ```
-Here, every step available in the config file can be executed, except long CNV calling in `cnv_calling` step without `cnv_cancer` column. No `somatic` variant calling mode can be used without `somatic_ctrl` column.
+Works with both BAM and unaligned BAM files in `path_file` column. Here, every step available in the config file can be executed, except long CNV calling in `cnv_calling` step without `cnv_cancer` column. No `somatic` variant calling mode can be used without `somatic_ctrl` column.
 </details>
 
 > [!NOTE]

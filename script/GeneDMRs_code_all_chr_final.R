@@ -70,7 +70,7 @@ if(dim(input_meth_table)[1] > 0){
     #meth_res_significant<-Significant_filter(meth_res)
     meth_res_significant <- meth_res[meth_res$Qvalue1 <= Qvalue_threshold,]
     
-    head(meth_res_significant)
+    print(head(meth_res_significant))
     
     
     ## Functions to make graphs and save tables
@@ -188,16 +188,16 @@ if(dim(input_meth_table)[1] > 0){
         # Enhanced volcanoplot
     	print("Draw Volcano plot")
         meth_res_volca <- meth_res
-    	#meth_res_volca$label <- paste(gsub(meth_res_volca$id,pattern="_.*",replacement=""),meth_res_volca$chr, meth_res_volca$start,meth_res_volca$end,sep="_")
+    	meth_res_volca$label <- paste(gsub(meth_res_volca$id,pattern="_.*",replacement=""),meth_res_volca$chr, meth_res_volca$start,meth_res_volca$end,sep="_")
     	#top_5 <- unlist(top_n(meth_res_volca,-5,Qvalue1)[,"label"])
     	png(paste0(path,"/Volcano_plot_Alu_",name[1],"_vs_",name[2],".png"),width=1200,heigh=800)
-    	print(EnhancedVolcano(meth_res_volca, x = "Methdiff1", y = "Qvalue1", lab = NULL, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = bquote(~Log[10]~ 'Adusted Pvalue'), xlim = c(0,1), title = "Volcano plot of Alu regions", subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendLabels = c("NS","DiffMeth ","Adjusted P-value","Adjusted P-value and DiffMeth"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)) #, lab = meth_res_volca$label, selectLab = top_5
+    	print(EnhancedVolcano(meth_res_volca, x = "Methdiff1", y = "Qvalue1", lab = NA, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = bquote(~Log[10]~ 'Adusted Pvalue'), xlim = c(-1,1), title = "Volcano plot of Alu regions", subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendLabels = c("NS","DiffMeth ","Adjusted P-value","Adjusted P-value and DiffMeth"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)) #, lab = meth_res_volca$label, selectLab = top_5
     	dev.off()
         	
         # MA-plot
     	print("Draw MA-plot")
         meth_res_ma <- meth_res
-        #meth_res_ma$label <- paste(gsub(meth_res_ma$id,pattern="_.*",replacement=""),meth_res_ma$chr, meth_res_ma$start,meth_res_ma$end,sep="_")
+        meth_res_ma$label <- paste(gsub(meth_res_ma$id,pattern="_.*",replacement=""),meth_res_ma$chr, meth_res_ma$start,meth_res_ma$end,sep="_")
         meth_res_ma$baseMean <- 1 / (10^(rowMeans(meth_res_ma[,c("Methgroup1","Methgroup2")]))) #EnhancedVolcano will internally transform the y-axis values by -log10(); here, we counteract this by creating a new column in the data for base mean.
         keyvals <- ifelse(abs(meth_res_ma$Methdiff1) > 0.05 & meth_res_ma$Qvalue1 < Qvalue_threshold, 'red2',
                    ifelse(abs(meth_res_ma$Methdiff1) > 0.05 & meth_res_ma$Qvalue1 > Qvalue_threshold, 'forestgreen',
@@ -209,7 +209,7 @@ if(dim(input_meth_table)[1] > 0){
         names(keyvals)[keyvals == 'royalblue'] <- 'Adjusted P-value'
         names(keyvals)[keyvals == 'grey30'] <- 'NS'
     	png(paste0(path,"/MA_plot_Alu_",name[1],"_vs_",name[2],".png"),width=1200,heigh=800)
-    	print(EnhancedVolcano(meth_res_ma, x = "Methdiff1", y = "baseMean", lab = NULL, colCustom = keyvals, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = "Mean methylation Level", xlim = c(-1,1), ylim = c(0,1), title = 'MA plot of Alu regions', subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)+ coord_flip()) #, lab = meth_res_ma$label, selectLab = top_5
+    	print(EnhancedVolcano(meth_res_ma, x = "Methdiff1", y = "baseMean", lab = NA, colCustom = keyvals, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = "Mean methylation Level", xlim = c(-1,1), ylim = c(0,1), title = 'MA plot of Alu regions', subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)+ coord_flip()) #, lab = meth_res_ma$label, selectLab = top_5
     	dev.off()
     
         if(dim(meth_res_significant)[1]>0){
@@ -331,16 +331,16 @@ if(dim(input_meth_table)[1] > 0){
         # Enhanced volcanoplot
     	print("Draw Volcano plot")
         meth_res_volca <- meth_res
-    	#meth_res_volca$label <- paste(meth_res_volca$transcript_name,meth_res_volca$feature,sep="_")
+    	meth_res_volca$label <- paste(meth_res_volca$transcript_name,meth_res_volca$feature,sep="_")
     	#top_5 <- unlist(top_n(meth_res_volca,-5,Qvalue1)[,"label"])
     	png(paste0(path,"/Volcano_plot_Transcript_",name[1],"_vs_",name[2],".png"),width=1200,heigh=800)
-    	print(EnhancedVolcano(meth_res_volca, x = "Methdiff1", y = "Qvalue1", lab = NULL, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = bquote(~Log[10]~ 'Adusted Pvalue'), xlim = c(0,1), title = "Volcano plot of Transcript regions", subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendLabels = c("NS","DiffMeth ","Adjusted P-value","Adjusted P-value and DiffMeth"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)) #, lab = meth_res_volca$label, selectLab = top_5
+    	print(EnhancedVolcano(meth_res_volca, x = "Methdiff1", y = "Qvalue1", lab = NA, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = bquote(~Log[10]~ 'Adusted Pvalue'), xlim = c(-1,1), title = "Volcano plot of Transcript regions", subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendLabels = c("NS","DiffMeth ","Adjusted P-value","Adjusted P-value and DiffMeth"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)) #, lab = meth_res_volca$label, selectLab = top_5
     	dev.off()
     
         # MA-plot
     	print("Draw MA-plot")
         meth_res_ma <- meth_res
-    	#meth_res_ma$label <- paste(meth_res_ma$transcript_name,meth_res_ma$feature,sep="_")
+    	meth_res_ma$label <- paste(meth_res_ma$transcript_name,meth_res_ma$feature,sep="_")
         meth_res_ma$baseMean <- 1 / (10^(rowMeans(meth_res_ma[,c("Methgroup1","Methgroup2")]))) #EnhancedVolcano will internally transform the y-axis values by -log10(); here, we counteract this by creating a new column in the data for base mean.
         keyvals <- ifelse(abs(meth_res_ma$Methdiff1) > 0.05 & meth_res_ma$Qvalue1 < Qvalue_threshold, 'red2',
                    ifelse(abs(meth_res_ma$Methdiff1) > 0.05 & meth_res_ma$Qvalue1 > Qvalue_threshold, 'forestgreen',
@@ -352,7 +352,7 @@ if(dim(input_meth_table)[1] > 0){
         names(keyvals)[keyvals == 'royalblue'] <- 'Adjusted P-value'
         names(keyvals)[keyvals == 'grey30'] <- 'NS'
     	png(paste0(path,"/MA_plot_Transcript_",name[1],"_vs_",name[2],".png"),width=1200,heigh=800)
-    	print(EnhancedVolcano(meth_res_ma, x = "Methdiff1", y = "baseMean",lab = NULL, colCustom = keyvals, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = "Mean methylation Level", xlim = c(-1,1), ylim = c(0,1), title = 'MA plot of Transcript regions', subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)+ coord_flip()) #, lab = meth_res_ma$label, selectLab = top_5
+    	print(EnhancedVolcano(meth_res_ma, x = "Methdiff1", y = "baseMean",lab = NA, colCustom = keyvals, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = "Mean methylation Level", xlim = c(-1,1), ylim = c(0,1), title = 'MA plot of Transcript regions', subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)+ coord_flip()) #, lab = meth_res_ma$label, selectLab = top_5
     	dev.off()
     
         if(dim(meth_res_significant)[1]>0){
@@ -477,16 +477,16 @@ if(dim(input_meth_table)[1] > 0){
         # Enhanced volcanoplot
     	print("Draw Volcano plot")
         meth_res_volca <- meth_res
-    	#meth_res_volca$label <- paste(meth_res_volca$transcript_name, meth_res_volca$feature, sep = "_")
+    	meth_res_volca$label <- paste(meth_res_volca$transcript_name, meth_res_volca$feature, sep = "_")
     	#top_5 <- unlist(top_n(meth_res_volca,-5,Qvalue1)[,"label"])
     	png(paste0(path, "/Volcano_plot_CpG_", name[1], "_vs_", name[2], ".png"), width=1200, heigh=800)
-    	print(EnhancedVolcano(meth_res_volca, x = "Methdiff1", y = "Qvalue1", lab = NULL, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = bquote(~Log[10]~ 'Adusted Pvalue'), xlim = c(0,1), title = "Volcano plot of CpG regions", subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendLabels = c("NS","DiffMeth ","Adjusted P-value","Adjusted P-value and DiffMeth"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)) #, lab = meth_res_volca$label, selectLab = top_5
+    	print(EnhancedVolcano(meth_res_volca, x = "Methdiff1", y = "Qvalue1", lab = NA, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = bquote(~Log[10]~ 'Adusted Pvalue'), xlim = c(-1,1), title = "Volcano plot of CpG regions", subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendLabels = c("NS","DiffMeth ","Adjusted P-value","Adjusted P-value and DiffMeth"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)) #, lab = meth_res_volca$label, selectLab = top_5
     	dev.off()
     
         # MA-plot
     	print("Draw MA-plot")
         meth_res_ma <- meth_res
-    	#meth_res_ma$label <- paste(meth_res_ma$transcript_name,meth_res_ma$feature,sep="_")
+    	meth_res_ma$label <- paste(meth_res_ma$transcript_name,meth_res_ma$feature,sep="_")
         meth_res_ma$baseMean <- 1 / (10^(rowMeans(meth_res_ma[,c("Methgroup1_CpGisland","Methgroup2_CpGisland")]))) #EnhancedVolcano will internally transform the y-axis values by -log10(); here, we counteract this by creating a new column in the data for base mean.
         keyvals <- ifelse(abs(meth_res_ma$Methdiff1) > 0.05 & meth_res_ma$Qvalue1 < Qvalue_threshold, 'red2',
                    ifelse(abs(meth_res_ma$Methdiff1) > 0.05 & meth_res_ma$Qvalue1 > Qvalue_threshold, 'forestgreen',
@@ -498,7 +498,7 @@ if(dim(input_meth_table)[1] > 0){
         names(keyvals)[keyvals == 'royalblue'] <- 'Adjusted P-value'
         names(keyvals)[keyvals == 'grey30'] <- 'NS'
     	png(paste0(path, "/MA_plot_CpG_", name[1], "_vs_", name[2], ".png"), width=1200, heigh=800)
-    	print(EnhancedVolcano(meth_res_ma, x = "Methdiff1", y = "baseMean",lab = NULL, colCustom = keyvals, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = "Mean methylation Level", xlim = c(-1,1), ylim = c(0,1), title = 'MA plot of CpG regions', subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)+ coord_flip()) #, lab = meth_res_ma$label, selectLab = top_5
+    	print(EnhancedVolcano(meth_res_ma, x = "Methdiff1", y = "baseMean",lab = NA, colCustom = keyvals, FCcutoff = 0.05, pCutoff = Qvalue_threshold, xlab = "Differential methylation Level", ylab = "Mean methylation Level", xlim = c(-1,1), ylim = c(0,1), title = 'MA plot of CpG regions', subtitle = paste0("Cutoff of adjusted p-value at ",Qvalue_threshold,"(",Qvalue_threshold*100,"%) and differential methylation level at 0.05(5%)"), legendPosition = 'right', drawConnectors = TRUE, gridlines.major = FALSE, gridlines.minor = FALSE)+ coord_flip()) #, lab = meth_res_ma$label, selectLab = top_5
     	dev.off()
     	
         if(dim(meth_res_significant)[1]>0){
@@ -607,4 +607,3 @@ if(dim(input_meth_table)[1] > 0){
     write.table(input_meth_table,paste0(path, "/meth_res_table_", name[1], "_vs_", name[2], ".csv"), sep=",", quote = F, row.names = F)
 }
 
-print(

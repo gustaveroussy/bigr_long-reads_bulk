@@ -23,10 +23,10 @@ sys.stderr.write("                     +++++++++++++++++++        \n")
 sys.stderr.write("                        +++++++++++++           \n")
 sys.stderr.write("                           +++++++              \n")
 
-sys.stderr.write("\n                Bulk long reads pipeline      \n")
-sys.stderr.write("\n                      version 2.0.1           \n")
+sys.stderr.write("\n                Bulk Long Reads Pipeline      \n")
+sys.stderr.write("\n                      version 2.1.0           \n")
 
-sys.stderr.write("\nFor any question, sent an email to bigr@gustaveroussy.fr")
+sys.stderr.write("\nFor any questions, please contact bigr@gustaveroussy.fr")
 sys.stderr.write("\n############################################################ \n\n")
 
 sys.stderr.write("\n#################### Setting Parameters ####################\n\n")
@@ -48,39 +48,44 @@ else:
 
 if "references" not in config or "genome" not in config["references"]:
     sys.exit("No reference fasta found for 'genome'. Check your configuration file.")
-#else:
-    #sys.stderr.write("The reference used is:\n")
-    #sys.stderr.write(config["references"]["genome"] + "\n\n")
+else:
+    # check if reference genome file exists
+    if not os.path.isfile(config["references"]["genome"]):
+        sys.exit(config["references"]["genome"] + " reference fasta file given as 'genome' value doesn't exist. Check your configuration file.")
+    else:
+        sys.stderr.write("The reference genome used is " + config["references"]["genome"] + "\n")
+
 if "references" in config and "chromosomes" in config["references"]:
     CHR_NUMBER = config["references"]["chromosomes"]
+    sys.stderr.write("The following chomosomes will be analysed: " + ",".join(config["references"]["chromosomes"]) + "\n")
 else: sys.exit("No chromosomes list found for 'chromosomes'. Check your configuration file.")
 
-# Function to get chromosomes list from fasta file (but problem if reference contains alternatives chromosomes)
+# UNUSED: Function to get chromosomes list from fasta file (but problem if reference contains alternatives chromosomes)
 def chrom_extract(fasta_file):
     fasta_sequences=open(fasta_file,"r")
     chrom=[i.strip(">").split(" ")[0] for i in fasta_sequences if "chromosome:" in i]
     return chrom
-#CHR_NUMBER=['1', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '2', '20', '21', '22', '3', '4', '5', '6', '7', '8', '9', 'MT', 'X', 'Y']
-#CHR_NUMBER=chrom_extract(config["references"]["genome"])
 
 ###################  Set environments and parameters of the various pipeline steps ###################
 
 if "input_format" not in config: sys.exit("Error: 'input_format' have to be set. Check your configuration file.")
-if config["input_format"] not in ["pod5","ubam","bam"]: sys.exit("Error: 'input_format' unknown. Check your configuration file.")
+if config["input_format"] not in ["pod5","ubam","bam"]: sys.exit("Error: 'input_format' unknown, it should be 'pod5', 'ubam' or 'bam'. Check your configuration file.")
 
 if "basecalling_mode" not in config: sys.exit("Error: 'basecalling_mode' have to be set. Check your configuration file.")
-if config["basecalling_mode"] not in ["methylation","basic"]: sys.exit("Error: 'basecalling_mode' unknown. Check your configuration file.")
+if config["basecalling_mode"] not in ["methylation","basic"]: sys.exit("Error: 'basecalling_mode' unknown, it should be 'methylation' or 'basic'. Check your configuration file.")
 
 if config["basecalling_mode"] == "basic":
-    if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"]: sys.exit("Error: 'differential_methylation' can't be done if 'basecalling_mode' is 'basic'. Check your configuration file.")
+    if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"]: sys.exit("Error: 'differential_methylation' steps can't be done if 'basecalling_mode' is 'basic', it should be set to 'methylation'. Check your configuration file.")
 
-# to do: check steps -for example, if 'phasing:true', 'snv_calling' has to be true too.
+if config["steps"]["phasing"] and not config["steps"]["snv_calling"]:
+    sys.exit("'snv_calling' step should be set to 'True' if you want to perform 'phasing' step.")
+
 
 # BASECALLING
 if config["steps"]["basecalling"]:
 
     # environments
-    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.7.3.simg"
+    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.8.0.simg"
     
     # parameters
     if 'basecalling_mode' in config:
@@ -97,7 +102,7 @@ if config["steps"]["basecalling"]:
             if 'dorado_basecaller' in config and 'model_meth' in config['dorado_basecaller']:
                 MODEL_METH = config['dorado_basecaller']['model_meth']
             else:
-                MODEL_METH = "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0_5mCG_5hmCG@v1"
+                MODEL_METH = "/mnt/beegfs/database/bioinfo/bigr_long-reads_bulk/MODELS/dorado/model_r10/dna_r10.4.1_e8.2_400bps_sup@v5.0.0_5mCG_5hmCG@v2"
             DORADO_MODEL = [MODE_BASIC,MODEL_METH]
         else: sys.exit("Error: 'basecalling_mode' unknown. Check your configuration file.")
     else: sys.exit("Error: 'basecalling_mode' have to be set. Check your configuration file.")
@@ -107,39 +112,56 @@ if config["steps"]["basecalling"]:
 if config["steps"]["alignment"]:
 
     # environments
-    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.7.3.simg"
+    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.8.0.simg"
 
     # parameters
-    # to do: check reference
+    # check parameters for reads filtering before alignment step
+    if config["input_format"] == "ubam" or config["input_format"] == "pod5":
+        if 'reads_filtering' in config and 'min_read_length' in config['reads_filtering']:
+            if isinstance(config["reads_filtering"]["min_read_length"], int):
+                MIN_READ_LENGTH = config["reads_filtering"]["min_read_length"]
+                sys.stderr.write("Minimum read length is set to: " + str(MIN_READ_LENGTH) + ".\n")
+            else:
+                sys.exit("Error: " + str(config["reads_filtering"]["min_read_length"]) + " = 'min_read_length' reads filtering parameter does not seem to be an integer. Check your configuration file.")
+        else:
+            MIN_READ_LENGTH = 1000
+            sys.stderr.write("No minimum read length parameter was given, it is set to: " + str(MIN_READ_LENGTH) + " by default.\n")
+        if 'reads_filtering' in config and 'min_quality_score' in config['reads_filtering']:
+            if isinstance(config["reads_filtering"]["min_quality_score"], int):
+                MIN_READ_QUALITY_SCORE = config["reads_filtering"]["min_quality_score"]
+                sys.stderr.write("Minimum read base quality score is set to: " + str(MIN_READ_QUALITY_SCORE) + ".\n")
+            else:
+                sys.exit("Error: " + str(config["reads_filtering"]["min_quality_score"]) + " = 'min_quality_score' reads filtering parameter does not seem to be an integer. Check your configuration file.")
+        else:
+            MIN_READ_QUALITY_SCORE = 10
+            sys.stderr.write("No minimum read base quality score parameter was given, it is set to: " + str(MIN_READ_QUALITY_SCORE) + " by default.\n")
+    
 
 # QUALITY-CONTROL
-if config["steps"]["alignment"] or config["input_format"] == "bam" :
+# environments
+CONDA_ENV_PYTHON = PIPELINE_DIR + "/envs/conda/python_3.9.1.yaml"
+CONDA_ENV_SAMTOOLS = PIPELINE_DIR + "/envs/conda/samtools_1.11.yaml"
+CONDA_ENV_QUALITYMAP = PIPELINE_DIR + "/envs/conda/qualimap.yaml"
+CONDA_ENV_MOSDEPTH = PIPELINE_DIR + "/envs/conda/mosdepth.yaml"
+SING_ENV_NANOPLOT = PIPELINE_DIR + "/envs/singularity/nanoplot_1.42.0.simg"
+SING_ENV_FASTQ_SCREEN = PIPELINE_DIR + "/envs/singularity/fastq_screen_v0.15.3_minimap2.simg"
+SING_ENV_FASTQC = PIPELINE_DIR + "/envs/singularity/fastqc_1.20.simg"
+CONDA_ENV_MULTIQC = PIPELINE_DIR + "/envs/conda/multiqc_1.24.1.yaml"
 
+# methylation
+if config["basecalling_mode"] == "methylation" and (config["steps"]["alignment"] or config["input_format"] == "bam"):
     # environments
-    #PATH_PYTHON3 = "/usr/bin/python3"
-    CONDA_ENV_PYTHON = PIPELINE_DIR + "/envs/conda/python_3.9.1.yaml"
-    CONDA_ENV_SAMTOOLS = PIPELINE_DIR + "/envs/conda/samtools_1.11.yaml"
-    CONDA_ENV_QUALITYMAP = PIPELINE_DIR + "/envs/conda/qualimap.yaml"
-    CONDA_ENV_MOSDEPTH = PIPELINE_DIR + "/envs/conda/mosdepth.yaml"
-    SING_ENV_NANOPLOT = PIPELINE_DIR + "/envs/singularity/nanoplot_1.42.0.simg"
-    SING_ENV_FASTQ_SCREEN = PIPELINE_DIR + "/envs/singularity/fastq_screen_v0.15.3_minimap2.simg"
-    SING_ENV_FASTQC = PIPELINE_DIR + "/envs/singularity/fastqc_1.20.simg"
-    CONDA_ENV_MULTIQC = PIPELINE_DIR + "/envs/conda/multiqc_1.24.1.yaml"
-
-    # methylation
-    if config['basecalling_mode'] == "methylation":
-        # environments
-        SING_ENV_GENEDMR = PIPELINE_DIR +  "/envs/singularity/GeneDMR.simg"
-        SING_ENV_MODKIT = PIPELINE_DIR + "/envs/singularity/modkit_0.3.2.simg"
-        # parameters
-        def list_meth_type(list_of_model):
-        	type_meth=[ re.split("@v[0-9\.]+",x)[-2].split("_")[1:] for x in list_of_model[1:]]
-        	return list(chain(*type_meth))
-        if 'dorado_basecaller' in config and 'meth_type' in config['dorado_basecaller'] :
-            METH_TYPE = config['dorado_basecaller']['meth_type']
-        elif 'MODEL_METH' in locals() :
-            METH_TYPE = list_meth_type(DORADO_MODEL)
-        else: sys.exit("Error: 'meth_type' in 'dorado_basecaller' have to be set. Check your configuration file.")
+    SING_ENV_GENEDMR = PIPELINE_DIR +  "/envs/singularity/GeneDMR.simg"
+    SING_ENV_MODKIT = PIPELINE_DIR + "/envs/singularity/modkit_0.3.2.simg"
+    # parameters
+    def list_meth_type(list_of_model):
+    	type_meth=[ re.split("@v[0-9\.]+",x)[-2].split("_")[1:] for x in list_of_model[1:]]
+    	return list(chain(*type_meth))
+    if 'dorado_basecaller' in config and 'meth_type' in config['dorado_basecaller'] :
+        METH_TYPE = config['dorado_basecaller']['meth_type']
+    elif 'MODEL_METH' in locals() :
+        METH_TYPE = list_meth_type(DORADO_MODEL)
+    else: sys.exit("Error: 'meth_type' in 'dorado_basecaller' have to be set. Check your configuration file.")
 
 
 # PREPROCESSING AND METHYLATION ANALYSIS
@@ -182,45 +204,54 @@ if 'variant_calling_mode' in config:
         SING_ENV_VCF2MAF = PIPELINE_DIR + "/envs/singularity/vcf2maf_1.6.22.simg"
         CONDA_ENV_MAFTOOLS = PIPELINE_DIR + "/envs/conda/maftools.yaml"
         # parameters
-        if 'snpsift' in config and 'filters' in config['snpsift']:
-            FILTERS = config["snpsift"]["filters"]
-        else:
-            FILTERS = ["(FILTER = 'PASS')"]
-        SNPSIFT_FILTERS = [
-            filter.replace("'", "'").replace('"', '"')
-            for filter in FILTERS
-        ]
-        SNPSIFT_FILTERS_NAMES = [
-            filter.replace("'", "")
-            .replace("!( ANN[0].EFFECT has", "no_")
-            .replace("!( ANN[*].EFFECT has", "no_")
-            .replace("[*]", ".all")
-            .replace("[0]", ".index0")
-            .replace("has", "")
-            .replace("(", "")
-            .replace(")", "")
-            .replace(" ", "")
-            .replace(">", "sup")
-            .replace("<", "inf")
-            .replace("=", "eq")
-            .replace("&", "_and_")
-            .replace("!", "not")
-            .replace("|", "_or_")
-            for filter in FILTERS
-        ]  # to do: find a way to keep "()" if therer are more than 2 parentheses. Ex: "((QUAL >= 10) && (QUAL <= 30)) || (FILTER = 'PASS')"
+        if 'snpsift' in config:
+            if 'keep_only_pass' in config['snpsift']:
+                if config["snpsift"]["keep_only_pass"]:
+                    sys.stderr.write("VCF files will be filtered to keep only PASS variants before running annotation and filtering steps.\n")
+                else:
+                    sys.stderr.write("VCF files will not be filtered before running annotation and filtering steps.\n")
+            else:
+                sys.stderr.write("By default, VCF files will be filtered to keep only PASS variants before running annotation and filtering steps.\n")
+
+            if 'filters' in config['snpsift']:
+                FILTERS = config["snpsift"]["filters"]
+                sys.stderr.write("The following filters will be applied to the VCF files: " + ",".join(FILTERS))
+            else:
+                FILTERS = ["(FILTER = 'PASS')"]
+                sys.stderr.write("No VCF filter were given. The following filters will be applied to the VCF files by default: " + ",".join(FILTERS))
+            SNPSIFT_FILTERS = [
+                filter.replace("'", "'").replace('"', '"')
+                for filter in FILTERS
+            ]
+            SNPSIFT_FILTERS_NAMES = [
+                filter.replace("'", "")
+                .replace("!( ANN[0].EFFECT has", "no_")
+                .replace("!( ANN[*].EFFECT has", "no_")
+                .replace("!(ANN[0].EFFECT has", "no_")
+                .replace("!(ANN[*].EFFECT has", "no_")
+                .replace("!(", "not_")
+                .replace("[*]", ".all")
+                .replace("[0]", ".index0")
+                .replace("has", "")
+                .replace("[", "")
+                .replace("]", "")
+                .replace("(", "")
+                .replace(")", "")
+                .replace(" ", "")
+                .replace(">", "sup")
+                .replace("<", "inf")
+                .replace("=", "eq")
+                .replace("&", "_and_")
+                .replace("!", "not")
+                .replace("|", "_or_")
+                for filter in FILTERS
+            ]
+
         if 'maftools' in config and 'genes_of_interest' in config['maftools']:
             GENES_FILE = config["maftools"]["genes_of_interest"]
         else:
             sys.stderr.write("No genes file found.\n")
             GENES_FILE = ""
-
-        SNPEFF_SUFFIX = ""
-        DBNSFP_SUFFIX = ""
-        CLINVAR_SUFFIX = ""
-        if "references" in config:
-            if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": SNPEFF_SUFFIX = "_annotated"
-            if "dbnsfp" in config["references"] and config["references"]["dbnsfp"] != "": DBNSFP_SUFFIX = "_dbnsfp"
-            if "clinvar" in config["references"] and config["references"]["clinvar"] != "": CLINVAR_SUFFIX = "_clinvar"
 
     if config["steps"]["sv_calling"]:
         
@@ -231,7 +262,7 @@ if 'variant_calling_mode' in config:
             CONDA_ENV_CUTESV = PIPELINE_DIR + "/envs/conda/cutesv.yaml"
             CONDA_ENV_ANNOTSV = PIPELINE_DIR + "/envs/conda/annotsv.yaml"
         
-        #somatic
+        # somatic
         elif config['variant_calling_mode'] == "somatic":
             # environments
             CONDA_ENV_NANOMONSV = PIPELINE_DIR + "/envs/conda/nanomonsv.yaml"
@@ -258,7 +289,7 @@ if config["steps"]["cnv_calling"]:
                 EXTRA_PARAMS_SPECTRE = "--blacklist " + config["spectre"]["blacklist"]
             else: sys.exit("Error: 'blacklist' file not found. Check your configuration file.")
 
-sys.stderr.write("Parameters validated.\n")
+sys.stderr.write("\n\nConfig file parameters seem correct ✔\n")
 
 sys.stderr.write("\n################### Checking Design File ###################\n\n")
 # Check if input_format, differential_methylation_condition and variant_calling_mode are consistent with design format
@@ -283,7 +314,7 @@ if config["steps"]["cnv_calling"]:
 
 # Check design file:
 if set(format_design).issubset(design.columns):
-    sys.stderr.write("Design file well formated.\n")
+    sys.stderr.write("Design file is well formatted with the required columns and correct column names.\n")
     design = design[format_design]
 else:
     sys.exit("Error in the format of the design file: missing column(s) or wrong column name(s). Check your design file.")
@@ -309,9 +340,15 @@ else:
     if not len(set(design["path_file"])) == len(design["path_file"]):
         sys.exit("Error: All path_file have to be different! Check your design file.")
     for i in range(0, len(design["sample_id"]), 1):
-        if config["input_format"] == "pod5" and not os.path.isdir(design["path_file"].iloc[i]): sys.exit(design["path_file"].iloc[i] + " pod5 folder doesn't exist. Check your design file.")
-        if config["input_format"] == "bam" and not os.path.isfile(design["path_file"].iloc[i]): sys.exit(design["path_file"].iloc[i] + " bam file doesn't exist. Check your design file.")
-        if config["input_format"] == "ubam" and not os.path.isfile(design["path_file"].iloc[i]): sys.exit(design["path_file"].iloc[i] + " ubam file doesn't exist. Check your design file.")
+        if "_vs_" in design["path_file"].iloc[i]:
+            sys.exit(design["path_file"].iloc[i] + " contains '_vs_' string, it could lead to issues while running the pipeline, please remove it from the input path_file column before proceeding again.")
+        elif config["steps"]["differential_methylation_condition"] and "_vs_" in design["methyl_group"].iloc[i]:
+            sys.exit(design["methyl_group"].iloc[i] + " contains '_vs_' string, it could lead to issues while running the pipeline, please remove it from the methyl_group column before proceeding again.")
+        else:
+            if config["input_format"] == "pod5" and not os.path.isdir(design["path_file"].iloc[i]): sys.exit(design["path_file"].iloc[i] + " pod5 folder doesn't exist. Check your design file.")
+            if config["input_format"] == "bam" and not os.path.isfile(design["path_file"].iloc[i]): sys.exit(design["path_file"].iloc[i] + " bam file doesn't exist. Check your design file.")
+            if config["input_format"] == "ubam":
+                if not os.path.isfile(design["path_file"].iloc[i]) and not os.path.isdir(design["path_file"].iloc[i]): sys.exit(design["path_file"].iloc[i] + " ubam file or folder doesn't exist. Check your design file.")
 
 #Check if somatic_ctrl is not the same as its sample_id
 if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "somatic":
@@ -323,8 +360,7 @@ if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config[
         if not pd.isna(design["somatic_ctrl"].iloc[i]) and not design["somatic_ctrl"].iloc[i] in design["sample_id"].tolist(): 
             sys.exit("somatic_ctrl " + str(design["somatic_ctrl"].iloc[i]) + " is not in sample_id column. Check your design file")
 
-sys.stderr.write("Design information appears correct.\n")
-#to do: check if there is no "_vs_" in sample_id and methyl_group.
+sys.stderr.write("Design information seem correct ✔\n")
 
 ################### Creating needed data structures ###################
 
@@ -354,7 +390,7 @@ def split_pod5_size(indir, outdir, sample, max_size):
 # Make the data structure for pod5 files as input
 if config["steps"]["basecalling"]:
     if config["input_format"] == "pod5":
-        sys.stderr.write("Input format is POD5 files.\n")
+        sys.stderr.write("\n→ Input format is POD5 files.\n")
         SAMPLE_NAME = []
         BATCH_NAME = []
         INPUT_PATHS = set()
@@ -364,27 +400,48 @@ if config["steps"]["basecalling"]:
             INPUT_PATHS.add(design["path_file"].iloc[line])
             BATCH_NAME = BATCH_NAME + BATCH_FOLDER
         INPUT_PATHS = list(INPUT_PATHS)
-        #sys.stderr.write("BATCH_NAME:\n")
-        #sys.stderr.write(', '.join(BATCH_NAME) + "\n")
-        #sys.stderr.write("SAMPLE_NAME:\n")
-        #sys.stderr.write(', '.join(SAMPLE_NAME) + "\n")
-    else: sys.exit("To make 'basecalling', 'input_format' have to be 'pod5'. Check your design file")
+    else: sys.exit("To make 'basecalling', 'input_format' must be set to 'pod5'. Check your design file")
 
+# Function to create UBAM and their indexes links
+def create_ubam_symlinks(outdir, sample, indir=None, ubam_files=None):
+    n = 0
+    batches = []
+    if indir is not None:
+        ubam_files = [i for i in glob.glob(indir + "/*.bam", recursive=True)]
+    elif ubam_files is not None:
+        ubam_files = [ubam_files]
+    for ubam in ubam_files:
+        batch_name = "batch_" + str(n)
+        if (os.path.exists(str(outdir + "/tmp/ubam/" + sample + "/")) == False):
+            os.makedirs(str(outdir + "/tmp/ubam/" + sample + "/"))
+        if (os.path.islink(str(outdir + "/tmp/ubam/" + sample + "/"+ sample + "_" + batch_name + ".bam")) == False):
+            os.symlink(str(ubam), str(outdir + "/tmp/ubam/" + sample + "/" + sample + "_" + batch_name + ".bam"))
+        if (os.path.islink(str(outdir + "/tmp/ubam/" + sample + "/"+ sample + "_" + batch_name + ".bam.bai")) == False):
+            bai = str(ubam) + ".bai"
+            os.symlink(bai, str(outdir + "/tmp/ubam/" + sample + "/" + sample + "_" + batch_name + ".bam.bai"))
+        n = n + 1
+        batches.append(sample + "_" + batch_name)
+    return batches
+    
 # Make the data structure for UBAM files as input
 if config["steps"]["alignment"]:
     if config["input_format"] == "ubam":
-        sys.stderr.write("Input format is UBAM file.\n")
-        #INPUT_PATHS = set()
-        #for line in range(0, len(design["path_file"]), 1):
-        #   INPUT_PATHS.add(os.path.dirname(design["path_file"].iloc[line]))
-        #INPUT_PATHS = list(INPUT_PATHS)
-    # to to
-    elif config["input_format"] == "bam": sys.exit("To make 'alignment', 'input_format' have to be 'pod5' or 'ubam'. Check your design file")
+        sys.stderr.write("\n→ Input format is UBAM.\n")
+        SAMPLE_NAME = []
+        BATCH_NAME = []
+        for line in range(0, len(design["path_file"]), 1):
+            if os.path.isdir(design["path_file"].iloc[line]):
+                BATCH_FOLDER = create_ubam_symlinks(outdir=OUTPUT_DIR, sample=design["sample_id"].iloc[line], indir=design["path_file"].iloc[line]) #each UBAM file = 1 batch
+            elif os.path.isfile(design["path_file"].iloc[line]):
+                BATCH_FOLDER = create_ubam_symlinks(outdir=OUTPUT_DIR, sample=design["sample_id"].iloc[line], ubam_files=design["path_file"].iloc[line])
+            SAMPLE_NAME = SAMPLE_NAME + ([design["sample_id"].iloc[line]] * len(BATCH_FOLDER))
+            BATCH_NAME = BATCH_NAME + BATCH_FOLDER
+    elif config["input_format"] == "bam": sys.exit("To make 'alignment', 'input_format' must be set to 'pod5' or 'ubam'. Check your design file.")
 
 # Make the data structure for BAM files as input
 if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"] or config["steps"]["snv_calling"] or config["steps"]["sv_calling"] or config["steps"]["cnv_calling"]:
     if config["input_format"] == "bam":
-        sys.stderr.write("Input format is BAM file.\n")
+        sys.stderr.write("\n→ Input format is BAM file.\n")
         SAMPLE_NAME = []
         ORIG_FILE = []
         SYMLINK_FILES = []
@@ -398,22 +455,15 @@ if config["steps"]["cnv_calling"]:
     CNV_SAMPLE_NAME = design["sample_id"].tolist()
     CNV_CANCER_BOOL = design["cnv_cancer"].tolist()
 
-
 ################### Creating needed data structures for paired analyses ###################
 
 if config["steps"]["differential_methylation_sample"]:
     PAIR_TMP=list(itertools.permutations(list(design['sample_id']),2))
     PAIR_METHYL=["_vs_".join(elms) for elms in PAIR_TMP]
-    #sys.stderr.write("PAIR_METHYL:\n")
-    #sys.stderr.write(', '.join(PAIR_METHYL) + "\n")
 
 if config["steps"]["differential_methylation_condition"]:
     CASE=list(design[design.methyl_group == 'case']['sample_id'])
     CONTROL=list(design[design.methyl_group == 'control']['sample_id'])
-    #sys.stderr.write("CASE:\n")
-    #sys.stderr.write(', '.join(CASE) + "\n")
-    #sys.stderr.write("CONTROL:\n")
-    #sys.stderr.write(', '.join(CONTROL) + "\n")
 
 if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config["variant_calling_mode"] == "somatic":
     PAIR_SOMATIC = []
@@ -423,9 +473,6 @@ if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config[
             PAIR_SOMATIC = PAIR_SOMATIC + [ design["sample_id"].iloc[i] + "_vs_" + design["somatic_ctrl"].iloc[i] ]
         else:
             PAIR_SOMATIC = PAIR_SOMATIC + [ design[design.somatic_ctrl == design["sample_id"].iloc[i]]["sample_id"].iloc[0] + "_vs_" + design["sample_id"].iloc[i] ]
-    #sys.stderr.write("PAIR_SOMATIC:\n")
-    #sys.stderr.write(', '.join(PAIR_SOMATIC) + "\n")
-
 
 ################### Wilcards Constraints ###################
 
@@ -459,18 +506,19 @@ if config["steps"]["differential_methylation_condition"]:
     wildcard_constraints:
         pair_methyl = '|'.join([x for x in PAIR_METHYL]),
 
-#    chromos = "|".join(CHR_NUMBER)
-#    batch_name = "|".join(BATCH_NAME),
-
 ################### Functions needed into rules ###################
 
-# to get input normal bam files
+# to get input normal bam and bai files
 def get_input_normal_bam(wildcards):
         return os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + str(wildcards.pair_somatic).split("_vs_")[0] + "/" + str(wildcards.pair_somatic).split("_vs_")[0] + "_sorted.bam")
+def get_input_normal_bai(wildcards):
+        return os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + str(wildcards.pair_somatic).split("_vs_")[0] + "/" + str(wildcards.pair_somatic).split("_vs_")[0] + "_sorted.bam.bai")
 
-# to get input tumor bam files
+# to get input tumor bam and bai files
 def get_input_tumor_bam(wildcards):
         return os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + str(wildcards.pair_somatic).split("_vs_")[1] + "/" + str(wildcards.pair_somatic).split("_vs_")[1] + "_sorted.bam")
+def get_input_tumor_bai(wildcards):
+        return os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + str(wildcards.pair_somatic).split("_vs_")[1] + "/" + str(wildcards.pair_somatic).split("_vs_")[1] + "_sorted.bam.bai")
 
 sys.stderr.write("\n########################### Run ############################\n\n")
 
@@ -485,6 +533,11 @@ rule all:
 if config["steps"]["basecalling"]:
     include: "rules/basecalling.smk"
 
+# UBAM QC:
+if config["steps"]["basecalling"] or config["input_format"] == "ubam":
+    include: "rules/bam2fq_qc.smk"
+    include: "rules/multiqc.smk"
+
 # ALIGNMENT
 if config["steps"]["alignment"]:
     include: "rules/filter_align.smk"
@@ -493,7 +546,6 @@ if config["steps"]["alignment"]:
 if config["steps"]["alignment"] or config["input_format"] == "bam":
     include: "rules/split_concat_bam.smk"
     include: "rules/bam_qc.smk"
-    include: "rules/bam2fq_qc.smk"
     include: "rules/multiqc.smk"
     if 'methylation' in config['basecalling_mode']:
         include: "rules/methylation_extract.smk"

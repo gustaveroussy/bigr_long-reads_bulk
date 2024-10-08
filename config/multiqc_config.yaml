@@ -32,7 +32,7 @@ module_order:
 
 #ignore_images: false
 
-custom_logo: "/mnt/beegfs/pipelines/bigr_long-reads_bulk/2.0.1/images/bigr_ContourBlanc_96dpi_100x100.png"
+custom_logo: "/mnt/beegfs/pipelines/bigr_long-reads_bulk/dev/images/bigr_ContourBlanc_96dpi_100x100.png"
 custom_logo_title: "Bioinformatics Core Facility - Gustave Roussy"
 
 fn_clean_exts:
@@ -46,10 +46,13 @@ fn_clean_exts:
     - "_idxstats"
     - "_coverage"
     - "_NanoStats"
+    - ".mosdepth.global.dist.txt"
+    - ".mosdepth.summary.txt"
+    - "_all_chr"
 
 software_versions:
     Nanostat: "1.42.0"
     Qualimap: "2.3"
     Mosdepth: "0.3.4"
     Samtools: "1.11"
-    pipeline: "2.0.1"
+    pipeline: "2.1.0"

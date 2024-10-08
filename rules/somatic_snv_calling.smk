@@ -11,7 +11,9 @@ This rule makes the SNV Calling by clairS with various models
 rule clairs:
     input:
         normal_bam_file = get_input_normal_bam,
+        normal_bai_file = get_input_normal_bai,
         tumor_bam_file = get_input_tumor_bam,
+        tumor_bai_file = get_input_tumor_bai,
         fa_ref = config["references"]["genome"],
     output:
         snv_vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/{pair_somatic}_snv.vcf.gz"),

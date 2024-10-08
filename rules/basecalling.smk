@@ -39,3 +39,4 @@ rule dorado_basecalling:
         
         echo "Finished"
         """
+
