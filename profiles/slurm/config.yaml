@@ -11,4 +11,4 @@ reason: false
 printshellcmds: true
 jobname: "{name}.{jobid}.snakejob"
 use-conda: true
-conda-prefix: /mnt/beegfs/pipelines/bigr_long-reads_bulk/dev/envs/compiled_conda
+conda-prefix: /mnt/beegfs/pipelines/bigr_long-reads_bulk/2.1.0/envs/compiled_conda
