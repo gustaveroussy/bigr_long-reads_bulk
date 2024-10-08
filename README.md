@@ -41,7 +41,7 @@ It is localised at `/mnt/beegfs/pipelines/bigr_long-reads_bulk/<VERSION>`. You c
 #### :one: Download pipeline
 ```
 cd /path_to_pipeline_installation_dir/
-VERSION="2.0.1"
+VERSION="2.1.0"
 git clone https://github.com/gustaveroussy/bigr_long-reads_bulk.git ${VERSION}
 ```
 #### :two: Download Singularity images
