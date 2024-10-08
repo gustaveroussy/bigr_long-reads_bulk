@@ -1,8 +1,6 @@
 """
 This rule launches methylation QC
 """
-
-
 rule meth_QC_ratio_fwd_rev:
     input:
         uncomb_bed = os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{sample_name}/{meth_type}/{sample_name}_chr{chr_number}_{meth_type}_uncomb.bed")
@@ -16,17 +14,14 @@ rule meth_QC_ratio_fwd_rev:
         script = os.path.normpath(PIPELINE_DIR + "/script")
     shell:
         """
-        #module load r/3.6.1
         singularity exec --contain -B {params.script},{OUTPUT_DIR} {SING_ENV_GENEDMR} \
         Rscript {params.script}/QC_methylation_ratio_fwd_rev.R --input_bed {input.uncomb_bed} --output_path {OUTPUT_DIR}/Quality_Control/methylation_QC/
         """
 
 
 """
-This rule generate motif CG bed in reference
+This rule generates motif CG bed in reference
 """
-
-
 rule motif_cg_gref:
     input:
         ref_fa = config["references"]["genome"],
@@ -46,9 +41,8 @@ rule motif_cg_gref:
 
 
 """
-This rule concatenate all chromosomes of a sample, from strand combined bed
+This rule concatenates all chromosomes of a sample, from strand combined bed
 """
-
 rule concat_all_chromosome_per_sample:
     input:
         uncomb_bed = expand(os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{{sample_name}}/{{meth_type}}/{{sample_name}}_chr{chr_number}_{{meth_type}}_uncomb.bed"), chr_number = CHR_NUMBER),
@@ -64,9 +58,8 @@ rule concat_all_chromosome_per_sample:
         """
 
 """
-This rule launch methylation QC barplot of methylated GC
+This rule launches methylation QC barplot of methylated GC
 """
-
 def params_bed_uncomb_concat_formated_all_samples(wildcards):
         return  ",".join(list(dict.fromkeys(expand(os.path.normpath(OUTPUT_DIR + "/tmp/bed_uncombined_strands/{sample_name}/"+ wildcards.meth_type  + "/{sample_name}_" + wildcards.meth_type + "_uncomb.bed"), sample_name = SAMPLE_NAME))))
 
@@ -85,16 +78,12 @@ rule meth_QC_barplot_CG:
         time_min = (lambda wildcards, attempt: attempt * 300)
     shell:
         """
-        #module load r/3.6.1
         singularity exec --contain -B {params.script},{OUTPUT_DIR} {SING_ENV_GENEDMR} \
         Rscript {params.script}/QC_methylation_barplot_methylated_CG.R --list_input_bed_uncomb_concat {params.bed_uncomb_concat_formated_all_samples} --input_bed_motif_cg {input.cg_motif} --output_path {OUTPUT_DIR}/Quality_Control/methylation_QC/ 
         """
 
 
-
-
-
-"""\ #je dois encore ecrire cette partie là
+"""\ #TO DO
 rule meth_QC_percentage_methylation_per_sample:
     input:
         bed=
@@ -106,12 +95,6 @@ rule meth_QC_percentage_methylation_per_sample:
         mem_mb=1024,
         time_min = (lambda wildcards, attempt: attempt * 300)
     shell:
-        
         module load r/3.6.1
         time Rscript /mnt/beegfs/userdata/y_mesloub/script/graph_QC_meth.R ${input.bed}
-
-
 """
-
-
-

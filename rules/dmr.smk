@@ -109,56 +109,55 @@ These rules produce the mean table
 
 ###MODIFIER LES CODE GENEDMR POUR RECEVOIR LES 2 FICHIERS
 
-rule DMR_mean_table_combination:
-    input:
-        control = lambda wildcards : os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{chr_number}/{meth_type}/" + wildcards.pair_methyl.split("_vs_")[1] + "-chr{chr_number}-{meth_type}-{strand}.bed"),
-        case = lambda wildcards : os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{chr_number}/{meth_type}/" + wildcards.pair_methyl.split("_vs_")[0] + "-chr{chr_number}-{meth_type}-{strand}.bed"),
-        alu = os.path.normpath(OUTPUT_DIR + "/tmp/resources/Alu/refseq.bed_Alu_chr{chr_number}_{strand}.txt"),
-        trans = os.path.normpath(OUTPUT_DIR + "/tmp/resources/Transcript/refseq.bed_Transcript_chr{chr_number}_{strand}.txt"),
-        cpg = os.path.normpath(OUTPUT_DIR + "/tmp/resources/CpG/cpgi.bed_CpG_chr{chr_number}.txt")
-    output:
-        os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/mean_table_{pair_methyl}_chr{chr_number}_{strand}.tsv")
-    params:
-        ref_folder = os.path.normpath(OUTPUT_DIR + "/tmp/resources/{ref_type}/"),
-        script = os.path.normpath(PIPELINE_DIR + "/script")
-    threads:1
-    resources:
-        mem_mb=lambda wildcards, attempt: min(10240 + 2040 * (attempt - 1 ),81920),
-        time_min = (lambda wildcards, attempt: attempt * 300)
-    shell:
-        """
-        module load singularity/3.10.5
-        echo {params.ref_folder}
-        singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR} {SING_ENV_GENEDMR} \
-        Rscript {params.script}/GeneDMRs_code{wildcards.ref_type}_final.R {input.control} {input.case} {wildcards.chr_number} {wildcards.meth_type} {wildcards.strand} {params.ref_folder} {output}
-        """
+if config["steps"]["differential_methylation_sample"]:
+    rule DMR_mean_table_combination:
+        input:
+            control = lambda wildcards : os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{chr_number}/{meth_type}/" + wildcards.pair_methyl.split("_vs_")[1] + "-chr{chr_number}-{meth_type}-{strand}.bed"),
+            case = lambda wildcards : os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{chr_number}/{meth_type}/" + wildcards.pair_methyl.split("_vs_")[0] + "-chr{chr_number}-{meth_type}-{strand}.bed"),
+            alu = os.path.normpath(OUTPUT_DIR + "/tmp/resources/Alu/refseq.bed_Alu_chr{chr_number}_{strand}.txt"),
+            trans = os.path.normpath(OUTPUT_DIR + "/tmp/resources/Transcript/refseq.bed_Transcript_chr{chr_number}_{strand}.txt"),
+            cpg = os.path.normpath(OUTPUT_DIR + "/tmp/resources/CpG/cpgi.bed_CpG_chr{chr_number}.txt")
+        output:
+            os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/mean_table_{pair_methyl}_chr{chr_number}_{strand}.tsv")
+        params:
+            ref_folder = os.path.normpath(OUTPUT_DIR + "/tmp/resources/{ref_type}/"),
+            script = os.path.normpath(PIPELINE_DIR + "/script")
+        threads:1
+        resources:
+            mem_mb=lambda wildcards, attempt: min(10240 + 2040 * (attempt - 1 ),81920),
+            time_min = (lambda wildcards, attempt: attempt * 300)
+        shell:
+            """
+            echo {params.ref_folder}
+            singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR} {SING_ENV_GENEDMR} \
+            Rscript {params.script}/GeneDMRs_code{wildcards.ref_type}_final.R {input.control} {input.case} {wildcards.chr_number} {wildcards.meth_type} {wildcards.strand} {params.ref_folder} {output}
+            """
 
-
-rule DMR_mean_table_condition:
-    input:
-        control = expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{{chr_number}}/{{meth_type}}/{controls}-chr{{chr_number}}-{{meth_type}}-{{strand}}.bed"),controls=CONTROL),
-        case = expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{{chr_number}}/{{meth_type}}/{cases}-chr{{chr_number}}-{{meth_type}}-{{strand}}.bed"),cases=CASE),
-        alu = os.path.normpath(OUTPUT_DIR + "/tmp/resources/Alu/refseq.bed_Alu_chr{chr_number}_{strand}.txt"),
-        trans = os.path.normpath(OUTPUT_DIR + "/tmp/resources/Transcript/refseq.bed_Transcript_chr{chr_number}_{strand}.txt"),
-        cpg = os.path.normpath(OUTPUT_DIR + "/tmp/resources/CpG/cpgi.bed_CpG_chr{chr_number}.txt")
-    output:
-        os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/mean_table_cases_vs_controls_chr{chr_number}_{strand}.tsv")
-    params:
-        control = ",".join(expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{{chr_number}}/{{meth_type}}/{controls}-chr{{chr_number}}-{{meth_type}}-{{strand}}.bed"),controls=CONTROL)),
-        case = ",".join(expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{{chr_number}}/{{meth_type}}/{cases}-chr{{chr_number}}-{{meth_type}}-{{strand}}.bed"),cases=CASE)),
-        ref_folder = os.path.normpath(OUTPUT_DIR + "/tmp/resources/{ref_type}/"),
-        script = os.path.normpath(PIPELINE_DIR + "/script")
-    threads:1
-    resources:
-        mem_mb=lambda wildcards, attempt: min(10240 + 2040 * (attempt - 1 ),81920),
-        time_min = (lambda wildcards, attempt: attempt * 300)
-    shell:
-        """
-        module load singularity/3.10.5
-        echo {params.ref_folder}
-        singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR} {SING_ENV_GENEDMR} \
-        Rscript {params.script}/GeneDMRs_code{wildcards.ref_type}_final.R {params.control} {params.case} {wildcards.chr_number} {wildcards.meth_type} {wildcards.strand} {params.ref_folder} {output}
-        """
+if config["steps"]["differential_methylation_condition"]:
+    rule DMR_mean_table_condition:
+        input:
+            control = expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{{chr_number}}/{{meth_type}}/{controls}-chr{{chr_number}}-{{meth_type}}-{{strand}}.bed"),controls=CONTROL),
+            case = expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{{chr_number}}/{{meth_type}}/{cases}-chr{{chr_number}}-{{meth_type}}-{{strand}}.bed"),cases=CASE),
+            alu = os.path.normpath(OUTPUT_DIR + "/tmp/resources/Alu/refseq.bed_Alu_chr{chr_number}_{strand}.txt"),
+            trans = os.path.normpath(OUTPUT_DIR + "/tmp/resources/Transcript/refseq.bed_Transcript_chr{chr_number}_{strand}.txt"),
+            cpg = os.path.normpath(OUTPUT_DIR + "/tmp/resources/CpG/cpgi.bed_CpG_chr{chr_number}.txt")
+        output:
+            os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/mean_table_cases_vs_controls_chr{chr_number}_{strand}.tsv")
+        params:
+            control = ",".join(expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{{chr_number}}/{{meth_type}}/{controls}-chr{{chr_number}}-{{meth_type}}-{{strand}}.bed"),controls=CONTROL)),
+            case = ",".join(expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/bed_files/chr{{chr_number}}/{{meth_type}}/{cases}-chr{{chr_number}}-{{meth_type}}-{{strand}}.bed"),cases=CASE)),
+            ref_folder = os.path.normpath(OUTPUT_DIR + "/tmp/resources/{ref_type}/"),
+            script = os.path.normpath(PIPELINE_DIR + "/script")
+        threads:1
+        resources:
+            mem_mb=lambda wildcards, attempt: min(10240 + 2040 * (attempt - 1 ),81920),
+            time_min = (lambda wildcards, attempt: attempt * 300)
+        shell:
+            """
+            echo {params.ref_folder}
+            singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR} {SING_ENV_GENEDMR} \
+            Rscript {params.script}/GeneDMRs_code{wildcards.ref_type}_final.R {params.control} {params.case} {wildcards.chr_number} {wildcards.meth_type} {wildcards.strand} {params.ref_folder} {output}
+            """
 
 
 rule DMR_stat_annot_graph_combination:
@@ -182,7 +181,6 @@ rule DMR_stat_annot_graph_combination:
     shell:
         """
         cat {input.tsv} > {output.concat}
-        module load singularity/3.10.5
         singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR},{params.ref_conversion_folder} {SING_ENV_GENEDMR} \
         Rscript {params.script}/GeneDMRs_code_all_chr_final.R {output.concat} {input.ref_conversion} {input.chromSize}
         """
@@ -208,7 +206,6 @@ rule DMR_stat_annot_graph_condition:
     shell:
         """
         cat {input.tsv} > {output.concat}
-        module load singularity/3.10.5
         singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR},{params.ref_conversion_folder} {SING_ENV_GENEDMR} \
         Rscript {params.script}/GeneDMRs_code_all_chr_final.R {output.concat} {input.ref_conversion} {input.chromSize}
         """

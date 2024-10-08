@@ -5,12 +5,77 @@ These rules make the BAM to FASTQ file conversion and generate Quality Control
 """
 
 """
-This rule converts BAM file to FASTQ file
+This rule concatenates all UBAM per sample
 """
+def input_concat_ubam(wildcards):
+    indices = [i for i in range(len(SAMPLE_NAME)) if SAMPLE_NAME[i] == wildcards.sample_name]
+    if config["input_format"] == "pod5":
+        input = expand(os.path.normpath(OUTPUT_DIR + "/tmp/calling/"+ wildcards.sample_name +"/{batch_name}.bam"), batch_name=[BATCH_NAME[i] for i in indices])
+    elif config["input_format"] == "ubam":
+        input = expand(os.path.normpath(OUTPUT_DIR + "/tmp/ubam/"+ wildcards.sample_name +"/{batch_name}.bam"), batch_name=[BATCH_NAME[i] for i in indices])
+    return input
 
-rule samtools_bam_to_fastq:
+rule concat_ubam:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam")
+        ubams = input_concat_ubam
+    output:
+        temp(os.path.normpath(OUTPUT_DIR + "/Ubam/{sample_name}/{sample_name}_concat.bam"))
+    threads: 1
+    resources:
+        mem_mb=lambda wildcards, attempt: min(2048 + 5120 * (attempt - 1),10240),
+        time_min = (lambda wildcards, attempt: attempt * 300)
+    conda:
+        CONDA_ENV_SAMTOOLS
+    shell:
+        """
+       	samtools cat {input.ubams} > {output}
+        """
+
+"""
+This rule sorts the concatenated UBAM
+"""
+rule sort_ubam:
+    input:
+        ubam = os.path.normpath(OUTPUT_DIR + "/Ubam/{sample_name}/{sample_name}_concat.bam")
+    output:
+        os.path.normpath(OUTPUT_DIR + "/Ubam/{sample_name}/{sample_name}_sorted.bam")
+    threads: 12
+    resources:
+        mem_mb=lambda wildcards, attempt: min(20480 + 5120 * (attempt - 1 ),35840),
+        time_min = (lambda wildcards, attempt: attempt * 300)
+    conda:
+        CONDA_ENV_SAMTOOLS
+    shell:
+        """
+       	samtools sort -@ 12 -o {output} {input.ubam}
+        """
+
+"""
+This rule indexes the sorted UBAM
+"""
+rule index_ubam:
+    input:
+        ubam = os.path.normpath(OUTPUT_DIR + "/Ubam/{sample_name}/{sample_name}_sorted.bam")
+    output:
+        os.path.normpath(OUTPUT_DIR + "/Ubam/{sample_name}/{sample_name}_sorted.bam.bai")
+    threads: 1
+    resources:
+        mem_mb=lambda wildcards, attempt: min(1024 + 5120 * (attempt - 1 ),10240),
+        time_min = (lambda wildcards, attempt: attempt * 300)
+    conda:
+        CONDA_ENV_SAMTOOLS
+    shell:
+        """
+       	samtools index {input.ubam}
+       	"""
+
+
+"""
+This rule converts UBAM file to FASTQ file
+"""
+rule samtools_ubam_to_fastq:
+    input:
+        ubam_file = os.path.normpath(OUTPUT_DIR + "/Ubam/{sample_name}/{sample_name}_sorted.bam")
     output:
         fastq_file = os.path.normpath(OUTPUT_DIR + "/Fastq/{sample_name}.fastq.gz")
     threads:
@@ -22,7 +87,7 @@ rule samtools_bam_to_fastq:
         CONDA_ENV_SAMTOOLS
     shell:
         """
-        samtools fastq --threads {threads} {input.bam_file} > {OUTPUT_DIR}/Fastq/{wildcards.sample_name}.fastq && \
+        samtools fastq --threads {threads} {input.ubam_file} > {OUTPUT_DIR}/Fastq/{wildcards.sample_name}.fastq && \
         gzip -v {OUTPUT_DIR}/Fastq/{wildcards.sample_name}.fastq
         """
 
@@ -45,8 +110,10 @@ rule fastqc:
     shell:
         """
         TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
-        singularity exec --contain -B {OUTPUT_DIR} -B ${{TMP_DIR}}:/tmp {SING_ENV_FASTQC} \
-        fastqc --threads {threads} --memory 4096 --outdir {OUTPUT_DIR}/Quality_Control/fastq_QC/fastqc/{wildcards.sample_name}/ {input.fastq_file}
+        _JAVA_OPTIONS="-Djava.io.tmpdir=${{TMP_DIR}}" && \
+        export _JAVA_OPTION && \
+        singularity exec --contain -B {OUTPUT_DIR},${{TMP_DIR}} {SING_ENV_FASTQC} \
+        fastqc --threads {threads} --memory 4096 --dir ${{TMP_DIR}} --outdir {OUTPUT_DIR}/Quality_Control/fastq_QC/fastqc/{wildcards.sample_name}/ {input.fastq_file}
         """
 
 """

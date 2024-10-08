@@ -46,10 +46,11 @@ rule spectre_cnv:
         regions = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/mosdepth/{sample_name}/{sample_name}_Q20.regions.bed.gz"),
         fa_ref = config["references"]["genome"]
     output:
-        vcf_file = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}.vcf.gz"),
+        #vcf_file = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}.vcf.gz"),
+        flag = os.path.normpath(OUTPUT_DIR + "/tmp/spectre/{sample_name}/{sample_name}_flag.txt"),
         bed_file = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}_cnv.bed.gz"),
         bed_tbi = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}_cnv.bed.gz.tbi"),
-        img = expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{{sample_name}}/img/{{sample_name}}_plot_cnv_chr_{chromos}.png"), chromos = [x for x in CHR_NUMBER if x not in ["MT","M"]])
+        #img = expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{{sample_name}}/img/{{sample_name}}_plot_cnv_chr_{chromos}.png"), chromos = [x for x in CHR_NUMBER if x not in ["MT","M"]])
     threads:
         2
     resources:
@@ -75,7 +76,36 @@ rule spectre_cnv:
         new_name=$(echo ${{file}} | sed 's/plot_cnv/plot_cnv_chr/')
         mv ${{file}} ${{new_name}}
         done
+
+        touch {output.flag}
         
         """
+
+rule bgzip_spectre_cnv:
+    input:
+        flag = os.path.normpath(OUTPUT_DIR + "/tmp/spectre/{sample_name}/{sample_name}_flag.txt")
+    output:
+        #vcf_file = os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}.vcf.gz")
+        flag = os.path.normpath(OUTPUT_DIR + "/tmp/spectre/{sample_name}/{sample_name}_flag_gz.txt")
+    threads:
+        1
+    resources:
+        mem_mb = (lambda wildcards, attempt: attempt * 4096),
+        time_min = (lambda wildcards, attempt: attempt * 60)
+    conda:
+        CONDA_ENV_SAMTOOLS
+    shell:
+        """
+        if [ -f {OUTPUT_DIR}/CNV_Calling/spectre/{wildcards.sample_name}/{wildcards.sample_name}.vcf ]; then
+            echo ".vcf file found! Compressing..."
+            bgzip -c {OUTPUT_DIR}/CNV_Calling/spectre/{wildcards.sample_name}/{wildcards.sample_name}.vcf > {OUTPUT_DIR}/CNV_Calling/spectre/{wildcards.sample_name}/{wildcards.sample_name}.vcf.gz
+            
+        fi
+        
+        touch {output.flag}
+        
+        """
+
+
 
     

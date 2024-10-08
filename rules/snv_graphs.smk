@@ -10,10 +10,10 @@ This rule converts VCF files to MAF files
 
 rule vcf_to_maf:
     input:
-        vcf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.vcf"),
+        vcf_file = os.path.normpath(OUTPUT_DIR + "/tmp/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/snpEff/{sample_name}{compl}_annotated_{filter}.vcf"),
         fa_ref = config["references"]["genome"]
     output:
-        maf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.maf")
+        maf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}_annotated_{filter}.maf")
     threads:
         1
     resources:
@@ -38,9 +38,9 @@ These rule make graphs from MAF files using MAFTOOLS
 
 rule maftools_graphs:
     input:
-        maf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.maf")
+        maf_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}_annotated_{filter}.maf")
     output:
-        flag_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_maftools_graphs_DONE.txt")
+        flag_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/{variant_calling_mode}/{path_calling_tool_params}/{sample_name}/maftools/{sample_name}{compl}_annotated_{filter}_maftools_graphs_DONE.txt")
     threads:
         1
     resources:
@@ -53,5 +53,5 @@ rule maftools_graphs:
         variantType = config["variant_calling_mode"]
     shell:
         """
-        Rscript {PIPELINE_DIR}/script/maftools_graphs.R --sampleName {wildcards.sample_name}{wildcards.compl}{SNPEFF_SUFFIX}{DBNSFP_SUFFIX}{CLINVAR_SUFFIX}_{wildcards.filter} --inputMAF {input.maf_file} --outputDir {OUTPUT_DIR}/SNV_Calling/{wildcards.variant_calling_mode}/{wildcards.path_calling_tool_params}/{wildcards.sample_name}/maftools/ --genesFile {params.genes_file} --variant_type {params.variantType}
+        Rscript {PIPELINE_DIR}/script/maftools_graphs.R --sampleName {wildcards.sample_name}{wildcards.compl}_annotated_{wildcards.filter} --inputMAF {input.maf_file} --outputDir {OUTPUT_DIR}/SNV_Calling/{wildcards.variant_calling_mode}/{wildcards.path_calling_tool_params}/{wildcards.sample_name}/maftools/ --genesFile {params.genes_file} --variant_type {params.variantType}
         """

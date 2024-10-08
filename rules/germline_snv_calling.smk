@@ -16,6 +16,7 @@ def clair3_input_model_path(wildcards):
 rule clair3:
     input:
         bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        index = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam.bai"),
         fa_ref = config["references"]["genome"],
         clair3_path = clair3_input_model_path
     output:
@@ -46,17 +47,10 @@ This rule removes duplicate alignments with same read IDs for pepper_margin_deep
 The other solution could be adding a suffix to keep every primary alignments: https://github.com/kishwarshafin/pepper/issues/67
 """
 
-def sambamba_markdup_input_bam(wildcards):
-    if config["input_format"] == "bam":
-        index = BAM_NAME.index(wildcards.bam_name)
-        input = SYMLINK_FILES[index]
-    elif config["steps"]["basecalling"]:
-        input = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/" + wildcards.bam_name + "/" + wildcards.bam_name + "_sorted.bam")
-    return input
-    
 rule sambamba_markdup:
     input:
-        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam")
+        bam_file = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam"),
+        index = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam.bai")
     output:
         markdup_bam = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/markdup/{sample_name}.bam")
     threads:
@@ -79,6 +73,7 @@ This rule makes the SNV Calling by pepper_margin_deepvariant
 rule pepper_margin_deepvariant:
     input:
         bam_file = os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/markdup/{sample_name}.bam"),
+        index = os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam.bai"),
         fa_ref = config["references"]["genome"]
     output:
         os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/{sample_name}.vcf.gz"),

@@ -10,7 +10,7 @@ This rule makes some graphs of SV with sniffles2_plot for a single vcf file
 
 rule sniffles2_plot:
     input:
-        vcf_file = os.path.normpath(OUTPUT_DIR + "/SV_Calling/{variant_calling_mode}/sniffles/{sample_name}/{sample_name}_SV.vcf")
+        vcf_file = os.path.normpath(OUTPUT_DIR + "/SV_Calling/{variant_calling_mode}/{path_calling_tool_params_SV}/{sample_name}/{sample_name}_SV.vcf")
     output:
         os.path.normpath(OUTPUT_DIR + "/SV_Calling/{variant_calling_mode}/{path_calling_tool_params_SV}/{sample_name}/sniffles2_plot/{sample_name}.png"),
         os.path.normpath(OUTPUT_DIR + "/SV_Calling/{variant_calling_mode}/{path_calling_tool_params_SV}/{sample_name}/sniffles2_plot/del_ins_genotype.jpg"),
@@ -40,7 +40,7 @@ This rule makes some graphs of SV with sniffles2_plot for a multiple vcf files i
 
 rule sniffles2_plot_multisamples:
     input:
-        vcf_multisamples_file = os.path.normpath(OUTPUT_DIR + "/SV_Calling/{variant_calling_mode}/sniffles/all_samples/all_samples_SV.vcf")
+        vcf_multisamples_file = os.path.normpath(OUTPUT_DIR + "/SV_Calling/{variant_calling_mode}/{path_calling_tool_params_SV}/all_samples/all_samples_SV.vcf")
     output:
         os.path.normpath(OUTPUT_DIR + "/SV_Calling/{variant_calling_mode}/sniffles/all_samples/sniffles2_plot/heatmap.jpg")
         #os.path.normpath(OUTPUT_DIR + "/SV_Calling/{variant_calling_mode}/sniffles/all_samples/sniffles2_plot/sample_upset.jpg"),

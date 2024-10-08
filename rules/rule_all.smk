@@ -11,7 +11,14 @@ def get_targets():
   if config["steps"]["basecalling"]:
       targets["basecalling"]=[
         #basecalled ubam
-        expand(os.path.normpath(OUTPUT_DIR + "/tmp/calling/{sample_name}/{batch_name}.bam"),zip,batch_name=BATCH_NAME,sample_name=SAMPLE_NAME),
+#        expand(os.path.normpath(OUTPUT_DIR + "/tmp/calling/{sample_name}/{batch_name}.bam"),zip,batch_name=BATCH_NAME,sample_name=SAMPLE_NAME),
+      ]
+  #BASECALLING or ALIGNMENT
+  if config["steps"]["basecalling"] or config["input_format"] == "ubam":
+      targets["basecalling_alignment"]=[
+        #basecalled concatened sorted indexed ubam
+        expand(os.path.normpath(OUTPUT_DIR + "/Ubam/{sample_name}/{sample_name}_sorted.bam"),sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/Ubam/{sample_name}/{sample_name}_sorted.bam.bai"),sample_name=SAMPLE_NAME),
       ]
   #ALIGNMENT
   if config["steps"]["alignment"]:
@@ -21,11 +28,11 @@ def get_targets():
         #alignment
 #        expand(os.path.normpath(OUTPUT_DIR + "/tmp/alignment/{sample_name}/{batches}_aligned.bam"),zip,batches=BATCH_NAME,sample_name=SAMPLE_NAME),
         #concat
-#        expand(os.path.normpath(OUTPUT_DIR + "/concat_sort/{sample_name}/{sample_name}_concat.bam"),sample_name=SAMPLE_NAME),
+#        expand(os.path.normpath(OUTPUT_DIR + "/Bam/{sample_name}/{sample_name}_concat.bam"),sample_name=SAMPLE_NAME),
         #sort
-        expand(os.path.normpath(OUTPUT_DIR + "/concat_sort/{sample_name}/{sample_name}_sorted.bam"),sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/Bam/{sample_name}/{sample_name}_sorted.bam"),sample_name=SAMPLE_NAME),
         #index
-        expand(os.path.normpath(OUTPUT_DIR + "/concat_sort/{sample_name}/{sample_name}_sorted.bam.bai"),sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/Bam/{sample_name}/{sample_name}_sorted.bam.bai"),sample_name=SAMPLE_NAME),
       ]
   if config["steps"]["alignment"] or config["input_format"] == "bam":
       targets["split_concat_bam"]=[
@@ -37,7 +44,8 @@ def get_targets():
 #        expand(os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam"),sample_name=SAMPLE_NAME),
 #        expand(os.path.normpath(OUTPUT_DIR + "/tmp/reconcat/{sample_name}/{sample_name}_sorted.bam.bai"),sample_name=SAMPLE_NAME)
       ]
-      #QUALITY-CONTROL
+  #QUALITY-CONTROL
+  if config["steps"]["alignment"] or config["input_format"] == "bam":
       targets["bam_qc"]=[
         #qualimap
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/qualimap/{sample_name}/qualimapReport.html"), sample_name=SAMPLE_NAME),
@@ -96,6 +104,7 @@ def get_targets():
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_idxstats.txt"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/bam_QC/samtools/{sample_name}/{sample_name}_coverage.txt"), sample_name=SAMPLE_NAME),
       ]
+  if config["steps"]["basecalling"] or config["input_format"] == "ubam":
       targets["fastq_qc"]=[
         #bam_to_fastq
         expand(os.path.normpath(OUTPUT_DIR + "/Fastq/{sample_name}.fastq.gz"), sample_name=SAMPLE_NAME),
@@ -106,21 +115,21 @@ def get_targets():
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/fastq_QC/fastq_screen/{sample_name}/{sample_name}_screen.txt"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/fastq_QC/fastq_screen/{sample_name}/{sample_name}_screen.html"), sample_name=SAMPLE_NAME),
       ]
-      if config["basecalling_mode"] == "methylation":
-        targets["methylation_qc"]=[
-            #meth_QC_ratio_fwd_rev
-            expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/methylation_QC/per_pos_per_strand_gam_ratio_{sample_name}_chr{chr_number}_{meth_type}_mqc.png"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
-            #QC_barplot_CG
-            expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/methylation_QC/barplot_methylated_CG_{meth_type}_mqc.png"),meth_type=METH_TYPE)
-        ]
-      targets["multiqc"]=[
-        #multiqc
-        os.path.normpath(OUTPUT_DIR + "/Quality_Control/multiqc_report.html")
+  if config["basecalling_mode"] == "methylation" and (config["steps"]["alignment"] or config["input_format"] == "bam"):
+      targets["methylation_qc"]=[
+        #meth_QC_ratio_fwd_rev
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/methylation_QC/per_pos_per_strand_gam_ratio_{sample_name}_chr{chr_number}_{meth_type}_mqc.png"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
+        #QC_barplot_CG
+        expand(os.path.normpath(OUTPUT_DIR + "/Quality_Control/methylation_QC/barplot_methylated_CG_{meth_type}_mqc.png"),meth_type=METH_TYPE)
       ]
+  targets["multiqc"]=[
+    #multiqc
+    os.path.normpath(OUTPUT_DIR + "/Quality_Control/multiqc_report.html")
+  ]
       
   #METHYLATION
-  if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"]:
-      targets["methylation"]=[
+ # if config["steps"]["differential_methylation_sample"] or config["steps"]["differential_methylation_condition"]:
+ #     targets["methylation"]=[
         #modkit separate mod
 #        expand(os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
 #        expand(os.path.normpath(OUTPUT_DIR + "/tmp/separate_mod/{sample_name}/{meth_type}/{sample_name}_chr_{chr_number}_{meth_type}.bam.bai"),chr_number=CHR_NUMBER,sample_name=SAMPLE_NAME,meth_type=METH_TYPE),
@@ -139,11 +148,11 @@ def get_targets():
 #        expand(os.path.normpath(OUTPUT_DIR + "/tmp/resources/Transcript/refseq.bed_Transcript_chr{chr_number}_{strands}.txt"),chr_number=CHR_NUMBER,strands=STRAND),
         #split CpG
 #        expand(os.path.normpath(OUTPUT_DIR + "/tmp/resources/CpG/cpgi.bed_CpG_chr{chr_number}.txt"),chr_number=CHR_NUMBER)
-      ]
+#      ]
   if config["steps"]["differential_methylation_sample"]:
       targets["differential_methylation_sample"]=[
         #mean_table
-#        expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_types}/{meth_type}/{pair_methyl}/mean_table_{pair_methyl}_chr{chr_number}_{strands}.tsv"), pair_methyl=PAIR_METHYL, chr_number=CHR_NUMBER, meth_type=METH_TYPE, strands=STRAND, ref_types=REF_TYPE),
+#        expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_types}/{meth_type}/{pair_methyl}/mean_table_{pair_methyl}_chr{chr_number}_{strands}.tsv"), pair_methyl = PAIR_METHYL, chr_number = CHR_NUMBER, meth_type = METH_TYPE, strands = STRAND, ref_types = REF_TYPE),
         #dmr_stat
         expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_types}/{meth_type}/{pair_methyl}/mean_table_{pair_methyl}_all_chr.tsv"), pair_methyl = PAIR_METHYL, meth_type = METH_TYPE, ref_types = REF_TYPE),
         expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_types}/{meth_type}/{pair_methyl}/meth_res_table_{pair_methyl}_all_chr.csv"), pair_methyl = PAIR_METHYL, meth_type = METH_TYPE, ref_types = REF_TYPE),
@@ -169,38 +178,30 @@ def get_targets():
             expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/{sample_name}.vcf.gz"), sample_name=SAMPLE_NAME),
             expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/{sample_name}.visual_report.html"), sample_name=SAMPLE_NAME),
         ]
-        targets["snv_annotation"]=[]
-        #clair3 & snpEff & snpSift
-        if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/snpEff/{sample_name}{compl}_annotated.vcf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output")),
-        if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/snpEff/{sample_name}{compl}_annotated_stats.csv"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output")),
-        if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/snpEff/{sample_name}{compl}_annotated_summary.html"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output")),
-        if "dbnsfp" in config["references"] and config["references"]["dbnsfp"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/snpEff/{sample_name}{compl}" + SNPEFF_SUFFIX + "_dbnsfp.vcf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output")),
-        if "clinvar" in config["references"] and config["references"]["clinvar"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/snpEff/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + "_clinvar.vcf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output")),
-        targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/snpEff/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.vcf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, filter=SNPSIFT_FILTERS_NAMES, compl="_merge_output")),
-        #pepper_margin_deepvariant & snpEff & snpSift
-        if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/snpEff/{sample_name}_annotated.vcf"), sample_name=SAMPLE_NAME)),
-        if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/snpEff/{sample_name}_annotated_stats.csv"), sample_name=SAMPLE_NAME)),
-        if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/snpEff/{sample_name}_annotated_summary.html"), sample_name=SAMPLE_NAME)),
-        if "dbnsfp" in config["references"] and config["references"]["dbnsfp"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/snpEff/{sample_name}" + SNPEFF_SUFFIX + "_dbnsfp.vcf"), sample_name=SAMPLE_NAME)),
-        if "clinvar" in config["references"] and config["references"]["clinvar"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/snpEff/{sample_name}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + "_clinvar.vcf"), sample_name=SAMPLE_NAME)),
-        targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/snpEff/{sample_name}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.vcf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES))
-        
+        targets["snv_annotation"]=[
+            #clair3 & snpEff & snpSift
+            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/snpEff/{sample_name}{compl}_annotated.vcf.gz"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output"),
+            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/snpEff/{sample_name}{compl}_annotated_{filter}.vcf.gz"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, filter=SNPSIFT_FILTERS_NAMES, compl="_merge_output"),
+            #pepper_margin_deepvariant & snpEff & snpSift
+            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/snpEff/{sample_name}_annotated.vcf.gz"), sample_name=SAMPLE_NAME),
+            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/snpEff/{sample_name}_annotated_{filter}.vcf.gz"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES)
+        ]
         targets["snv_graphs"]=[
             #clair3 & maftools
-            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_maftools_graphs_DONE.txt"), sample_name=SAMPLE_NAME, compl="_merge_output", clair3_model=NAME_CLAIR3_MODEL, filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.maf"), sample_name=SAMPLE_NAME, compl="_merge_output", clair3_model=NAME_CLAIR3_MODEL, filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_mafSummary_plot.pdf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output", filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_mafbarplot.pdf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output", filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_oncoplot.pdf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output", filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_titv_Transitions_Transversions.pdf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output", filter=SNPSIFT_FILTERS_NAMES),
+            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}_annotated_{filter}_maftools_graphs_DONE.txt"), sample_name=SAMPLE_NAME, compl="_merge_output", clair3_model=NAME_CLAIR3_MODEL, filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}_annotated_{filter}.maf"), sample_name=SAMPLE_NAME, compl="_merge_output", clair3_model=NAME_CLAIR3_MODEL, filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}_annotated_{filter}_mafSummary_plot.pdf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output", filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}_annotated_{filter}_mafbarplot.pdf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output", filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}_annotated_{filter}_oncoplot.pdf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output", filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/clair3/{clair3_model}/{sample_name}/maftools/{sample_name}{compl}_annotated_{filter}_titv_Transitions_Transversions.pdf"), sample_name=SAMPLE_NAME, clair3_model=NAME_CLAIR3_MODEL, compl="_merge_output", filter=SNPSIFT_FILTERS_NAMES),
 
             #pepper_margin_deepvariant & maftools
-            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_maftools_graphs_DONE.txt"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.maf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_mafSummary_plot.pdf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_mafbarplot.pdf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_oncoplot.pdf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
-            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}_titv_Transitions_Transversions.pdf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES)
+            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}_annotated_{filter}_maftools_graphs_DONE.txt"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}_annotated_{filter}.maf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}_annotated_{filter}_mafSummary_plot.pdf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}_annotated_{filter}_mafbarplot.pdf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}_annotated_{filter}_oncoplot.pdf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES),
+            #expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Germline/pepper_margin_deepvariant/{sample_name}/maftools/{sample_name}_annotated_{filter}_titv_Transitions_Transversions.pdf"), sample_name=SAMPLE_NAME, filter=SNPSIFT_FILTERS_NAMES)
         ]
       #SOMATIC
       if config["variant_calling_mode"] == "somatic":
@@ -208,15 +209,12 @@ def get_targets():
             #clairs
             expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/{pair_somatic}{compl}.vcf.gz"), pair_somatic=PAIR_SOMATIC, compl=["_snv","_indel"])
         ]
-        targets["snv_annotation"]=[]
-        #clairs & snpEff & snpSift
-        if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/snpEff/{pair_somatic}{compl}_annotated.vcf"), pair_somatic=PAIR_SOMATIC, compl=["_snv","_indel"])),
-        if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/snpEff/{pair_somatic}{compl}_annotated_stats.csv"), pair_somatic=PAIR_SOMATIC, compl=["_snv","_indel"])),
-        if "genome_snpEff" in config["references"] and config["references"]["genome_snpEff"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/snpEff/{pair_somatic}{compl}_annotated_summary.html"), pair_somatic=PAIR_SOMATIC, compl=["_snv","_indel"])),
-        if "dbnsfp" in config["references"] and config["references"]["dbnsfp"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/snpEff/{pair_somatic}{compl}" + SNPEFF_SUFFIX + "_dbnsfp.vcf"), pair_somatic=PAIR_SOMATIC, compl=["_snv","_indel"])),
-        if "clinvar" in config["references"] and config["references"]["clinvar"] != "": targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/snpEff/{pair_somatic}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + "_clinvar.vcf"), pair_somatic=PAIR_SOMATIC, compl=["_snv","_indel"])),
-        targets["snv_annotation"].append(expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/snpEff/{pair_somatic}{compl}" + SNPEFF_SUFFIX + DBNSFP_SUFFIX + CLINVAR_SUFFIX + "_{filter}.vcf"), pair_somatic=PAIR_SOMATIC, filter=SNPSIFT_FILTERS_NAMES, compl=["_snv","_indel"]))
-
+        targets["snv_annotation"]=[
+            #clairs & snpEff & snpSift
+            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/snpEff/{pair_somatic}{compl}_annotated.vcf.gz"), pair_somatic=PAIR_SOMATIC, compl=["_snv","_indel"]),
+            expand(os.path.normpath(OUTPUT_DIR + "/SNV_Calling/Somatic/clairs/{pair_somatic}/snpEff/{pair_somatic}{compl}_annotated_{filter}.vcf.gz"), pair_somatic=PAIR_SOMATIC, filter=SNPSIFT_FILTERS_NAMES, compl=["_snv","_indel"])
+        ]
+        
   #PHASING
   if config["steps"]["phasing"]:
       #GERMLINE
@@ -326,10 +324,11 @@ def get_targets():
   if config["steps"]["cnv_calling"]:
     targets["cnv_calling"]=[
         #spectre
-        expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}.vcf.gz"), sample_name=SAMPLE_NAME),
+        expand(os.path.normpath(OUTPUT_DIR + "/tmp/spectre/{sample_name}/{sample_name}_flag_gz.txt"), sample_name=SAMPLE_NAME),
+        #expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}.vcf.gz"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}_cnv.bed.gz"), sample_name=SAMPLE_NAME),
         expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/{sample_name}_cnv.bed.gz.tbi"), sample_name=SAMPLE_NAME),
-        expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/img/{sample_name}_plot_cnv_chr_{chromos}.png"), sample_name=SAMPLE_NAME, chromos=[x for x in CHR_NUMBER if x not in ["MT","M"]])
+        #expand(os.path.normpath(OUTPUT_DIR + "/CNV_Calling/spectre/{sample_name}/img/{sample_name}_plot_cnv_chr_{chromos}.png"), sample_name=SAMPLE_NAME, chromos=[x for x in CHR_NUMBER if x not in ["MT","M"]])
     ]
 
   return targets
