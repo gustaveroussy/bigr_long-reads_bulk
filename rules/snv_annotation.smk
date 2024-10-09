@@ -163,9 +163,10 @@ This rule makes the filtering of SNV by snpSift
 
 def snpsift_filter_params(wildcards):
     index = SNPSIFT_FILTERS_NAMES.index(wildcards.filter)
-    filters = SNPSIFT_FILTERS[index]
-    filters_format = [ sub.replace('SAMPLE', str(wildcards.sample_name_or_pair_somatic)) for sub in filters ]
-    return filters_format
+    filter = SNPSIFT_FILTERS[index]
+    filter_format = filter.replace('SAMPLE', str(wildcards.sample_name_or_pair_somatic))
+    return filter_format
+
 
 rule snpsift_filtering:
     input:

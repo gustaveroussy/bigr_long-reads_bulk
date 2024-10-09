@@ -85,7 +85,7 @@ if config["steps"]["phasing"] and not config["steps"]["snv_calling"]:
 if config["steps"]["basecalling"]:
 
     # environments
-    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.8.0.simg"
+    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.8.1.simg"
     
     # parameters
     if 'basecalling_mode' in config:
@@ -112,7 +112,7 @@ if config["steps"]["basecalling"]:
 if config["steps"]["alignment"]:
 
     # environments
-    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.8.0.simg"
+    SING_ENV_DORADO = PIPELINE_DIR + "/envs/singularity/dorado_0.8.1.simg"
 
     # parameters
     # check parameters for reads filtering before alignment step
