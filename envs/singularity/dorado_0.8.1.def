@@ -2,9 +2,9 @@ BootStrap: docker
 From: ubuntu:22.04
 
 #build image
-#sudo singularity build dorado_0.8.0.simg dorado_0.8.0.def
+#sudo singularity build dorado_0.8.1.simg dorado_0.8.1.def
 #using image
-#singularity exec --no-home dorado_0.8..simg dorado --version
+#singularity exec --no-home dorado_0.8.1.simg dorado --version
 %environment
 	export RETICULATE_MINICONDA_ENABLED=FALSE #ne pas utiliser de miniconda dans le container
 	LANG=en_US.UTF-8
@@ -12,7 +12,7 @@ From: ubuntu:22.04
 	LC_MONETARY=en_US.UTF-8
 	LC_PAPER=en_US.UTF-8
 	LC_MEASUREMENT=en_US.UTF-8
-	export PATH="/dorado-0.8.0-linux-x64/bin/:$PATH"
+	export PATH="/dorado-0.8.1-linux-x64/bin/:$PATH"
 	#export PATH="/usr/local/cuda/bin:$PATH"
 	#export LD_LIBRARY_PATH="/usr/local/cuda-11.1/targets/x86_64-linux/lib:$LD_LIBRARY_PATH"
 
@@ -25,5 +25,5 @@ From: ubuntu:22.04
 	apt-get install -y tzdata=2024a-0ubuntu0.22.04.1 wget=1.21.2-2ubuntu1.1
 	dpkg-reconfigure --frontend noninteractive tzdata
 	
-	wget https://cdn.oxfordnanoportal.com/software/analysis/dorado-0.8.0-linux-x64.tar.gz
-	tar -xvf dorado-0.8.0-linux-x64.tar.gz
+	wget https://cdn.oxfordnanoportal.com/software/analysis/dorado-0.8.1-linux-x64.tar.gz
+	tar -xvf dorado-0.8.1-linux-x64.tar.gz
