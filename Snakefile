@@ -502,7 +502,7 @@ if (config["steps"]["snv_calling"] or config["steps"]["sv_calling"]) and config[
         sample_name_and_all_samples = ("|".join(SAMPLE_NAME) + "|all_samples"),
         variant_calling_mode = "Germline"
 
-if config["steps"]["differential_methylation_condition"]:
+if config["steps"]["differential_methylation_sample"]:
     wildcard_constraints:
         pair_methyl = '|'.join([x for x in PAIR_METHYL]),
 

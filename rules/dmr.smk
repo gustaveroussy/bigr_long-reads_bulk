@@ -159,56 +159,57 @@ if config["steps"]["differential_methylation_condition"]:
             Rscript {params.script}/GeneDMRs_code{wildcards.ref_type}_final.R {params.control} {params.case} {wildcards.chr_number} {wildcards.meth_type} {wildcards.strand} {params.ref_folder} {output}
             """
 
+if config["steps"]["differential_methylation_sample"]:
+    rule DMR_stat_annot_graph_combination:
+        input: #concat chr
+            tsv = expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{{ref_type}}/{{meth_type}}/{{pair_methyl}}/mean_table_{{pair_methyl}}_chr{chr}_{strand}.tsv"), chr = CHR_NUMBER, strand = STRAND),
+            ref_conversion = config["references"]["code_symbol_conversion"],
+            chromSize = os.path.normpath(OUTPUT_DIR + "/tmp/resources/chromSize.txt"),
+        output:
+            concat = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/mean_table_{pair_methyl}_all_chr.tsv"),
+            stat = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/meth_res_table_{pair_methyl}_all_chr.csv"),
+            #filtered = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/filtered_table_{pair_methyl}_all_chr.tsv"),
+            #annot = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/annot_table_{pair_methyl}_all_chr.tsv"),
+        params:
+            ref_folder = os.path.normpath(OUTPUT_DIR + "/tmp/resources/{ref_type}/"),
+            script = os.path.normpath(PIPELINE_DIR + "/script"),
+            ref_conversion_folder = os.path.dirname(config["references"]["code_symbol_conversion"])
+        threads:1
+        resources:
+            mem_mb = (lambda wildcards, attempt: attempt * 10240),
+            time_min = (lambda wildcards, attempt: attempt * 300)
+        shell:
+            """
+            cat {input.tsv} > {output.concat}
+            singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR},{params.ref_conversion_folder} {SING_ENV_GENEDMR} \
+            Rscript {params.script}/GeneDMRs_code_all_chr_final.R {output.concat} {input.ref_conversion} {input.chromSize}
+            """
 
-rule DMR_stat_annot_graph_combination:
-    input: #concat chr
-        tsv = expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{{ref_type}}/{{meth_type}}/{{pair_methyl}}/mean_table_{{pair_methyl}}_chr{chr}_{strand}.tsv"), chr = CHR_NUMBER, strand = STRAND),
-        ref_conversion = config["references"]["code_symbol_conversion"],
-        chromSize = os.path.normpath(OUTPUT_DIR + "/tmp/resources/chromSize.txt"),
-    output:
-        concat = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/mean_table_{pair_methyl}_all_chr.tsv"),
-        stat = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/meth_res_table_{pair_methyl}_all_chr.csv"),
-        #filtered = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/filtered_table_{pair_methyl}_all_chr.tsv"),
-        #annot = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/{pair_methyl}/annot_table_{pair_methyl}_all_chr.tsv"),
-    params:
-        ref_folder = os.path.normpath(OUTPUT_DIR + "/tmp/resources/{ref_type}/"),
-        script = os.path.normpath(PIPELINE_DIR + "/script"),
-        ref_conversion_folder = os.path.dirname(config["references"]["code_symbol_conversion"])
-    threads:1
-    resources:
-        mem_mb = (lambda wildcards, attempt: attempt * 10240),
-        time_min = (lambda wildcards, attempt: attempt * 300)
-    shell:
-        """
-        cat {input.tsv} > {output.concat}
-        singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR},{params.ref_conversion_folder} {SING_ENV_GENEDMR} \
-        Rscript {params.script}/GeneDMRs_code_all_chr_final.R {output.concat} {input.ref_conversion} {input.chromSize}
-        """
-        
-rule DMR_stat_annot_graph_condition:
-    input:
-        tsv = expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{{ref_type}}/{{meth_type}}/cases_vs_controls/mean_table_cases_vs_controls_chr{chr_number}_{strand}.tsv"), chr_number = CHR_NUMBER, strand = STRAND),
-        ref_conversion = config["references"]["code_symbol_conversion"],
-        chromSize = os.path.normpath(OUTPUT_DIR + "/tmp/resources/chromSize.txt"),
-    output:
-        concat = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/mean_table_cases_vs_controls_all_chr.tsv"),
-        stat = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/meth_res_table_cases_vs_controls_all_chr.csv"),
-        #filtered = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/filtered_table_cases_vs_controls_all_chr.tsv"),
-        #annot = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/annot_table_cases_vs_controls_all_chr.tsv"),
-    threads:1
-    params:
-        ref_folder = os.path.normpath(OUTPUT_DIR + "/tmp/resources/{ref_type}/"),
-        script = os.path.normpath(PIPELINE_DIR + "/script"),
-        ref_conversion_folder = os.path.dirname(config["references"]["code_symbol_conversion"])
-    resources:
-        mem_mb = (lambda wildcards, attempt: attempt * 10240),
-        time_min = (lambda wildcards, attempt: attempt * 300)
-    shell:
-        """
-        cat {input.tsv} > {output.concat}
-        singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR},{params.ref_conversion_folder} {SING_ENV_GENEDMR} \
-        Rscript {params.script}/GeneDMRs_code_all_chr_final.R {output.concat} {input.ref_conversion} {input.chromSize}
-        """
+if config["steps"]["differential_methylation_condition"]:
+    rule DMR_stat_annot_graph_condition:
+        input:
+            tsv = expand(os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{{ref_type}}/{{meth_type}}/cases_vs_controls/mean_table_cases_vs_controls_chr{chr_number}_{strand}.tsv"), chr_number = CHR_NUMBER, strand = STRAND),
+            ref_conversion = config["references"]["code_symbol_conversion"],
+            chromSize = os.path.normpath(OUTPUT_DIR + "/tmp/resources/chromSize.txt"),
+        output:
+            concat = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/mean_table_cases_vs_controls_all_chr.tsv"),
+            stat = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/meth_res_table_cases_vs_controls_all_chr.csv"),
+            #filtered = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/filtered_table_cases_vs_controls_all_chr.tsv"),
+            #annot = os.path.normpath(OUTPUT_DIR + "/Methylation_Analysis/{ref_type}/{meth_type}/cases_vs_controls/annot_table_cases_vs_controls_all_chr.tsv"),
+        threads:1
+        params:
+            ref_folder = os.path.normpath(OUTPUT_DIR + "/tmp/resources/{ref_type}/"),
+            script = os.path.normpath(PIPELINE_DIR + "/script"),
+            ref_conversion_folder = os.path.dirname(config["references"]["code_symbol_conversion"])
+        resources:
+            mem_mb = (lambda wildcards, attempt: attempt * 10240),
+            time_min = (lambda wildcards, attempt: attempt * 300)
+        shell:
+            """
+            cat {input.tsv} > {output.concat}
+            singularity exec --contain -B {params.script},{params.ref_folder},{OUTPUT_DIR},{params.ref_conversion_folder} {SING_ENV_GENEDMR} \
+            Rscript {params.script}/GeneDMRs_code_all_chr_final.R {output.concat} {input.ref_conversion} {input.chromSize}
+            """
 
 
     
