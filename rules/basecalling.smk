@@ -26,16 +26,12 @@ rule dorado_basecalling:
         time_min=10079
     shell:
         """
-        #EXPORT CUDA LOCATION
-        export LD_LIBRARY_PATH=/usr/local/cuda-11.1/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
-        export PATH=/usr/local/cuda/bin:$PATH
-
         if [ ! -z {params.math_model} ]; then echo "Methylation model provided ..."; meth="--modified-bases-models {params.math_model}"; else meth=""; fi
         echo -e "Launching dorado...\n"
-        
+
         TMP_DIR=$(mktemp -d -t lr_pipeline-XXXXXXXXXX) && \
-        singularity exec --contain --nv -B {OUTPUT_DIR},{params.model_path},{params.input_paths} -B ${{TMP_DIR}}:/tmp \
-        {SING_ENV_DORADO} dorado basecaller {params.basic_model} {input.pod5_folder} $meth -x cuda:0 --emit-moves --no-trim -b 1728 > {output}
+        singularity exec --no-home --nv -B {OUTPUT_DIR},{params.model_path},{params.input_paths},/usr -B ${{TMP_DIR}}:/tmp \
+        {SING_ENV_DORADO} dorado basecaller {params.basic_model} {input.pod5_folder} $meth -x cuda:0 --emit-moves --no-trim > {output}
         
         echo "Finished"
         """
